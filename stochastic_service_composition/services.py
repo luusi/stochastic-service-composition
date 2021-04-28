@@ -75,7 +75,7 @@ class Service:
                 assert action in self.actions, f"action {action} is not in the set of actions"
 
 
-def from_transitions(transition_function: TransitionFunction, initial_state: State, final_states: Set[State]) -> Service:
+def build_service_from_transitions(transition_function: TransitionFunction, initial_state: State, final_states: Set[State]) -> Service:
     """
     Initialize a service from transitions, initial state and final states.
 
