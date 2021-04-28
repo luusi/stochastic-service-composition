@@ -23,3 +23,17 @@ pip install -e .
 # alternatively:
 # python setup.py develop 
 ```
+
+## Tests
+
+To run tests: `tox`
+
+To run only the code tests: `tox -e py3.7`
+
+To run only the linters: 
+- `tox -e flake8`
+- `tox -e mypy`
+- `tox -e black-check`
+- `tox -e isort-check`
+
+Please look at the `tox.ini` file for the full list of supported commands. 
