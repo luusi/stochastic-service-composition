@@ -14,7 +14,7 @@ In Conference of the Italian Association for Artificial Intelligence
 First, install [Pipenv](https://pipenv-fork.readthedocs.io/en/latest/).
 Then:
 ```
-pipenv pipenv install --dev
+pipenv install --dev
 ```
 
 - Install the Python package in development mode:

@@ -4,7 +4,7 @@ services = {
     'a': {
         ('airoff', 'hotairon'): 'airhot', 
         ('airoff', 'coldairon'): 'aircold', ('airhot', 'hotairon'): 'airhot',
-          ('airhot', 'airoff'): 'airoff', ('aircold', 'coldairon'): 'aircold', ('aircold', 'airoff'): 'airoff'},
+        ('airhot', 'airoff'): 'airoff', ('aircold', 'coldairon'): 'aircold', ('aircold', 'airoff'): 'airoff'},
     'b': {
         ('empty', 'fillbathtub'): 'filled',
         ('filled', 'emptybathtub'): 'empty'
