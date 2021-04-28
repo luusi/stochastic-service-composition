@@ -1,4 +1,7 @@
 """Test the 'services.py' module."""
+from graphviz import Digraph
+
+from stochastic_service_composition.rendering import service_to_graphviz
 from stochastic_service_composition.services import Service, product
 
 
@@ -99,3 +102,10 @@ def test_product_many_states(bathtub_device, door_device):
             ("close", 1): ("filled", "unique"),
         },
     }
+
+
+def test_rendering(all_services):
+    """Test the transformation to Digraph."""
+    current_service = all_services
+    result = service_to_graphviz(current_service)
+    assert isinstance(result, Digraph)

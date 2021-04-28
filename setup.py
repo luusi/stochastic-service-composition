@@ -10,6 +10,7 @@ setup(name='stochastic_service_composition',
       packages=['stochastic_service_composition'],
       zip_safe=False,
       install_requires=[
-            "numpy"
+            "numpy",
+            "graphviz"
       ]
       )

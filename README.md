@@ -24,6 +24,10 @@ pip install -e .
 # python setup.py develop 
 ```
 
+- To use rendering functionalities, you will also need to install Graphviz. 
+  At [this page](https://www.graphviz.org/download/) you will
+  find the releases for all the supported platform.
+
 ## Tests
 
 To run tests: `tox`
