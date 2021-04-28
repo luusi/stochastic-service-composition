@@ -25,7 +25,7 @@ def service_to_graphviz(
     graph.attr(rankdir="LR")
 
     for state in service.states:
-        shape = "circle" if state in service.final_states else "doublecircle"
+        shape = "doublecircle" if state in service.final_states else "circle"
         if state == service.initial_state:
             graph.node(state2str(state), root="true", shape=shape)
         else:
