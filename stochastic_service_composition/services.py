@@ -135,7 +135,7 @@ def product(*services: Service) -> Service:
 
     new_states: Set[State] = set()
     new_final_states: Set[State] = set()
-    actions: Set[Action] = services[0].actions
+    actions: Set[Action] = set()
     new_initial_state: Tuple[State, ...] = tuple(
         service.initial_state for service in services
     )
@@ -169,11 +169,13 @@ def product(*services: Service) -> Service:
                 next_state_list[i] = next_service_state
                 next_state = tuple(next_state_list)
                 symbol = (a, i)
+                actions.add(symbol)
                 new_transition_function.setdefault(current_state, {})[symbol] = tuple(
                     next_state
                 )
                 if next_state not in visited and next_state not in to_be_visited:
                     to_be_visited.add(next_state)
+                    queue.append(next_state)
 
     new_service = Service(
         states=new_states,

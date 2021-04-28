@@ -1,5 +1,5 @@
 """Test the 'services.py' module."""
-from stochastic_service_composition.services import Service
+from stochastic_service_composition.services import Service, product
 
 
 class TestInitialization:
@@ -51,3 +51,51 @@ def test_initialization_from_transitions(all_services):
     The test will trigger initialization from the fixtures.
     To see the fixtures, go to 'conftest.py'.
     """
+
+
+def test_product_one_state(kitchen_exhaust_fan_device, door_device):
+    """Test the product between two simple services (one state each)."""
+    system_service = product(kitchen_exhaust_fan_device, door_device)
+
+    # since the two operands have only one state, also the
+    #  product has one state.
+    assert len(system_service.states) == 1
+    assert system_service.states == {("unique", "unique")}
+    assert system_service.actions == {("vent_kitchen", 0), ("close", 1), ("open", 1)}
+    assert system_service.initial_state == ("unique", "unique")
+    assert system_service.final_states == {("unique", "unique")}
+    assert system_service.transition_function == {
+        ("unique", "unique"): {
+            ("vent_kitchen", 0): ("unique", "unique"),
+            ("open", 1): ("unique", "unique"),
+            ("close", 1): ("unique", "unique"),
+        }
+    }
+
+
+def test_product_many_states(bathtub_device, door_device):
+    """Test the product between two services (more states)."""
+    system_service = product(bathtub_device, door_device)
+
+    assert len(system_service.states) == 2
+    assert system_service.states == {("empty", "unique"), ("filled", "unique")}
+    assert system_service.actions == {
+        ("fill_up_buthub", 0),
+        ("empty_buthub", 0),
+        ("open", 1),
+        ("close", 1),
+    }
+    assert system_service.initial_state == ("empty", "unique")
+    assert system_service.final_states == {("empty", "unique")}
+    assert system_service.transition_function == {
+        ("empty", "unique"): {
+            ("fill_up_buthub", 0): ("filled", "unique"),
+            ("open", 1): ("empty", "unique"),
+            ("close", 1): ("empty", "unique"),
+        },
+        ("filled", "unique"): {
+            ("empty_buthub", 0): ("empty", "unique"),
+            ("open", 1): ("filled", "unique"),
+            ("close", 1): ("filled", "unique"),
+        },
+    }
