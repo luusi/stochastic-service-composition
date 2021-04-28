@@ -13,11 +13,13 @@ class Service:
         """
         Initialize the service.
 
-        :param states:
-        :param actions:
-        :param final_states:
-        :param initial_state:
-        :param transition_function:
+        Both states and action must be of an hashable type.
+
+        :param states: the set of states
+        :param actions: the set of actions
+        :param final_states: the final states
+        :param initial_state: the initial state
+        :param transition_function: the transition function
         """
         self.states = states
         self.actions = actions
@@ -25,12 +27,44 @@ class Service:
         self.initial_state = initial_state
         self.transition_function = transition_function
 
-        # TODO check
+    def __post_init__(self):
+        """Do post-initialization checks."""
+        self._check_number_of_states_at_least_one()
+        self._check_number_of_actions_at_least_one()
+        self._check_number_of_final_states_at_least_one()
+        self._check_initial_state_in_states()
+        self._check_all_final_states_in_states()
+
+    def _check_number_of_states_at_least_one(self):
+        """Check that the number of states is at least one."""
+        assert len(self.states) > 0, "must have at least one state"
+
+    def _check_number_of_actions_at_least_one(self):
+        assert len(self.actions) > 0, "must have at least one action"
+        """Check that the number of actions is at least one."""
+
+    def _check_number_of_final_states_at_least_one(self):
+        """Check that the number of final states is at least one."""
+        assert len(self.final_states) > 0, "must have at least one final state"
+
+    def _check_initial_state_in_states(self):
+        """Check that the initial state is in the set of states.."""
+        assert self.initial_state in self.states, "initial state not in the set of states"
+
+    def _check_all_final_states_in_states(self):
+        """Check that all the final states are in the set of states."""
+        final_states_not_in_states = {final_state for final_state in self.states if final_state not in self.states}
+        assert len(final_states_not_in_states) == 0, f"the following final states are not in the set of states: {final_states_not_in_states}"
 
 
 def product(*services: Service) -> Service:
-    """Do the product between services."""
-    assert len(services) >= 2, "At least two services."
+    """
+    Do the product between services.
+
+    :param services: a list of service instances
+    :return: the system service
+    """
+    assert len(services) >= 2, "at least two services"
 
     new_states = set()
     new_final_states = set()
