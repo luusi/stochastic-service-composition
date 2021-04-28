@@ -21,13 +21,13 @@ def display_svgs(*filenames, style=_default_svg_style):
     display(HTML(no_wrap_div))
 
 
-def render_service(service: Service, **kwargs):
-    digraph = service_to_graphviz(service, **kwargs)
-    render_digraph(digraph)
+def render_service(service: Service, style: str = _default_svg_style):
+    digraph = service_to_graphviz(service)
+    render_digraph(digraph, style)
 
 
-def render_digraph(digraph: Digraph):
+def render_digraph(digraph: Digraph, style: str):
     tmp_dir = tempfile.mkdtemp()
     tmp_filepath = str(Path(tmp_dir, "output"))
     digraph.render(tmp_filepath)
-    display_svgs(tmp_filepath + ".svg")
+    display_svgs(tmp_filepath + ".svg", style=style)
