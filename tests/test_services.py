@@ -20,7 +20,7 @@ class TestInitialization:
             cls.actions,
             cls.final_states,
             cls.initial_state,
-            cls.transition_function
+            cls.transition_function,
         )
 
     def test_states(self):

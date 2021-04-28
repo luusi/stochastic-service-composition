@@ -1,18 +1,22 @@
-from collections import deque
-from typing import Set, Dict, Any, Tuple
+"""This module contains the implementation of the service abstraction."""
 
-from stochastic_service_composition.types import TransitionFunction, State, Action
+from collections import deque
+from typing import Deque, Dict, Set, Tuple
+
+from stochastic_service_composition.types import Action, State, TransitionFunction
 
 
 class Service:
     """A service."""
 
-    def __init__(self,
-                 states: Set[State],
-                 actions: Set[Action],
-                 final_states: Set[State],
-                 initial_state: State,
-                 transition_function: Dict[State, Dict[Action, State]]):
+    def __init__(
+        self,
+        states: Set[State],
+        actions: Set[Action],
+        final_states: Set[State],
+        initial_state: State,
+        transition_function: Dict[State, Dict[Action, State]],
+    ):
         """
         Initialize the service.
 
@@ -53,12 +57,18 @@ class Service:
 
     def _check_initial_state_in_states(self):
         """Check that the initial state is in the set of states.."""
-        assert self.initial_state in self.states, "initial state not in the set of states"
+        assert (
+            self.initial_state in self.states
+        ), "initial state not in the set of states"
 
     def _check_all_final_states_in_states(self):
         """Check that all the final states are in the set of states."""
-        final_states_not_in_states = {final_state for final_state in self.states if final_state not in self.states}
-        assert len(final_states_not_in_states) == 0, f"the following final states are not in the set of states: {final_states_not_in_states}"
+        final_states_not_in_states = {
+            final_state for final_state in self.states if final_state not in self.states
+        }
+        assert (
+            len(final_states_not_in_states) == 0
+        ), f"the following final states are not in the set of states: {final_states_not_in_states}"
 
     def _check_transition_consistency(self):
         """
@@ -69,13 +79,23 @@ class Service:
         - check that every action is contained in the set of actions.
         """
         for start_state, transitions_by_action in self.transition_function.items():
-            assert start_state not in self.states, f"state {start_state} is not in the set of states"
+            assert (
+                start_state not in self.states
+            ), f"state {start_state} is not in the set of states"
             for action, next_state in transitions_by_action.items():
-                assert next_state in self.states, f"state {next_state} is not in the set of states"
-                assert action in self.actions, f"action {action} is not in the set of actions"
+                assert (
+                    next_state in self.states
+                ), f"state {next_state} is not in the set of states"
+                assert (
+                    action in self.actions
+                ), f"action {action} is not in the set of actions"
 
 
-def build_service_from_transitions(transition_function: TransitionFunction, initial_state: State, final_states: Set[State]) -> Service:
+def build_service_from_transitions(
+    transition_function: TransitionFunction,
+    initial_state: State,
+    final_states: Set[State],
+) -> Service:
     """
     Initialize a service from transitions, initial state and final states.
 
@@ -96,16 +116,12 @@ def build_service_from_transitions(transition_function: TransitionFunction, init
             states.add(next_state)
 
     unreachable_final_states = final_states.difference(states)
-    assert len(unreachable_final_states) == 0, f"the following final states are not in the transition function: {unreachable_final_states}"
+    assert (
+        len(unreachable_final_states) == 0
+    ), f"the following final states are not in the transition function: {unreachable_final_states}"
     assert initial_state in states, "initial state not in the set of states"
 
-    return Service(
-        states,
-        actions,
-        final_states,
-        initial_state,
-        transition_function
-    )
+    return Service(states, actions, final_states, initial_state, transition_function)
 
 
 def product(*services: Service) -> Service:
@@ -117,34 +133,45 @@ def product(*services: Service) -> Service:
     """
     assert len(services) >= 2, "at least two services"
 
-    new_states = set()
-    new_final_states = set()
-    actions = services[0].actions
-    new_initial_state = tuple(service.initial_state for service in services)
-    new_transition_function: Dict[Any, Dict[Any, Any]] = {}
+    new_states: Set[State] = set()
+    new_final_states: Set[State] = set()
+    actions: Set[Action] = services[0].actions
+    new_initial_state: Tuple[State, ...] = tuple(
+        service.initial_state for service in services
+    )
+    new_transition_function: TransitionFunction = {}
 
-    queue = deque()
+    queue: Deque[Tuple[State, ...]] = deque()
     queue.append(new_initial_state)
     to_be_visited = {new_initial_state}
     visited = set()
     while len(queue) > 0:
-        current_state: Tuple[Any] = queue.popleft()
+        current_state: Tuple[State, ...] = queue.popleft()
         to_be_visited.remove(current_state)
         visited.add(current_state)
 
         new_states.add(current_state)
-        if all(component_i in services[i].final_states for i, component_i in enumerate(current_state)):
+        if all(
+            component_i in services[i].final_states
+            for i, component_i in enumerate(current_state)
+        ):
             new_final_states.add(current_state)
 
         next_state_template = current_state
         for i in range(len(services)):
             current_service: Service = services[i]
-            current_service_state = list(next_state_template[i])
-            for a, next_service_state in current_service.transition_function[current_service_state].items():
-                next_state = list(next_state_template)
-                next_state[i] = next_service_state
+            current_service_state = list(next_state_template)[i]
+            for a, next_service_state in current_service.transition_function[
+                current_service_state
+            ].items():
+                # we need to transform it to list temporarily
+                next_state_list = list(next_state_template)
+                next_state_list[i] = next_service_state
+                next_state = tuple(next_state_list)
                 symbol = (a, i)
-                new_transition_function.setdefault(current_state, {})[symbol] = tuple(next_state)
+                new_transition_function.setdefault(current_state, {})[symbol] = tuple(
+                    next_state
+                )
                 if next_state not in visited and next_state not in to_be_visited:
                     to_be_visited.add(next_state)
 

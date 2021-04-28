@@ -53,28 +53,28 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .mypy_cache
 	rm -fr coverage.xml
 
-lint-all: black isort lint static bandit safety vulture pylint ## run all linters
+lint-all: black isort lint static ## run all linters
 
 lint: ## check style with flake8
-	flake8 stochastic_service_composition tests scripts
+	flake8 stochastic_service_composition tests
 
 static: ## static type checking with mypy
-	mypy stochastic_service_composition tests scripts
+	mypy stochastic_service_composition tests
 
 isort: ## sort import statements with isort
-	isort stochastic_service_composition tests scripts
+	isort stochastic_service_composition tests
 
 isort-check: ## check import statements order with isort
-	isort --check-only stochastic_service_composition tests scripts
+	isort --check-only stochastic_service_composition tests
 
 black: ## apply black formatting
-	black stochastic_service_composition tests scripts
+	black stochastic_service_composition tests
 
 black-check: ## check black formatting
-	black --check --verbose stochastic_service_composition tests scripts
+	black --check --verbose stochastic_service_composition tests
 
 pylint: ## run pylint
-	pylint stochastic_service_composition tests scripts
+	pylint stochastic_service_composition tests
 
 test: ## run tests quickly with the default Python
 	pytest tests --doctest-modules \
