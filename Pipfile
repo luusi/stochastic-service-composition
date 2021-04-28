@@ -6,6 +6,15 @@ name = "pypi"
 [packages]
 
 [dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-randomly = "*"
+tox = "*"
+ipython = "*"
+flake8 = "*"
+mypy = "*"
+isort = "*"
+pytest-lazy-fixture = "*"
 
 [requires]
 python_version = "3.8"
