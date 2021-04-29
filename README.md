@@ -23,3 +23,21 @@ pip install -e .
 # alternatively:
 # python setup.py develop 
 ```
+
+- To use rendering functionalities, you will also need to install Graphviz. 
+  At [this page](https://www.graphviz.org/download/) you will
+  find the releases for all the supported platform.
+
+## Tests
+
+To run tests: `tox`
+
+To run only the code tests: `tox -e py3.7`
+
+To run only the linters: 
+- `tox -e flake8`
+- `tox -e mypy`
+- `tox -e black-check`
+- `tox -e isort-check`
+
+Please look at the `tox.ini` file for the full list of supported commands. 

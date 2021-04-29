@@ -3,8 +3,12 @@ import itertools
 services = {
     'a': {
         ('airoff', 'hotairon'): 'airhot', 
-        ('airoff', 'coldairon'): 'aircold', ('airhot', 'hotairon'): 'airhot',
-        ('airhot', 'airoff'): 'airoff', ('aircold', 'coldairon'): 'aircold', ('aircold', 'airoff'): 'airoff'},
+        ('airoff', 'coldairon'): 'aircold',
+        ('airhot', 'hotairon'): 'airhot',
+        ('airhot', 'airoff'): 'airoff',
+        ('aircold', 'coldairon'): 'aircold',
+        ('aircold', 'airoff'): 'airoff'
+    },
     'b': {
         ('empty', 'fillbathtub'): 'filled',
         ('filled', 'emptybathtub'): 'empty'
