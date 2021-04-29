@@ -37,7 +37,7 @@ To run the notebooks:
 PYTHONPATH="$(pwd)" jupyter-notebook
 ```
 
-And then go to `examples/notebooks`.
+Then via the browser go to `examples/notebooks` to open the notebooks.
 
 ## Tests
 
