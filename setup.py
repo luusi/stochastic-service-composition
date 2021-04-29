@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='stochastic_service_composition',
       version='0.1.0',
@@ -7,7 +7,7 @@ setup(name='stochastic_service_composition',
       author='Luciana Silo',
       author_email='silo.1586010@studenti.uniroma1.it',
       license='MIT',
-      packages=['stochastic_service_composition'],
+      packages=find_packages(include='stochastic_service_composition*'),
       zip_safe=False,
       install_requires=[
             "numpy",
