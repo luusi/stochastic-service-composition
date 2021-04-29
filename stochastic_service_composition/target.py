@@ -1,11 +1,15 @@
 """Represent a target service."""
 from typing import Dict, Set
 
-from stochastic_service_composition.services import (
-    Service,
-    build_service_from_transitions,
+from stochastic_service_composition.services import Service
+from stochastic_service_composition.types import (
+    Action,
+    Prob,
+    Reward,
+    State,
+    TargetDynamics,
+    TransitionFunction,
 )
-from stochastic_service_composition.types import Action, State, TransitionFunction
 
 
 class Target(Service):
@@ -94,11 +98,9 @@ class Target(Service):
 
 
 def build_target_from_transitions(
-    transition_function: TransitionFunction,
+    dynamics_function: TargetDynamics,
     initial_state: State,
     final_states: Set[State],
-    policy: Dict[State, Dict[Action, float]],
-    reward: Dict[State, Dict[Action, float]],
 ) -> Target:
     """
     Initialize a service from transitions, initial state and final states.
@@ -106,21 +108,40 @@ def build_target_from_transitions(
     The set of states and the set of actions are parsed from the transition function.
     This will guarantee that all the states are reachable.
 
-    :param transition_function: the transition function
+    :param dynamics_function: the transition function
     :param initial_state: the initial state
     :param final_states: the final states
     :return: the service
     """
-    service = build_service_from_transitions(
-        transition_function, initial_state, final_states
-    )
-    target = Target(
-        service.states,
-        service.actions,
-        service.final_states,
-        service.initial_state,
-        service.transition_function,
+    states = set()
+    actions = set()
+    transition_function: TransitionFunction = {}
+    policy: Dict[State, Dict[Action, Prob]] = {}
+    reward: Dict[State, Dict[Action, Reward]] = {}
+    for start_state, transitions_by_action in dynamics_function.items():
+        states.add(start_state)
+        transition_function[start_state] = {}
+        policy[start_state] = {}
+        reward[start_state] = {}
+        for action, (next_state, prob, reward_value) in transitions_by_action.items():
+            actions.add(action)
+            states.add(next_state)
+            transition_function[start_state][action] = next_state
+            policy[start_state][action] = prob
+            reward[start_state][action] = reward_value
+
+    unreachable_final_states = final_states.difference(states)
+    assert (
+        len(unreachable_final_states) == 0
+    ), f"the following final states are not in the transition function: {unreachable_final_states}"
+    assert initial_state in states, "initial state not in the set of states"
+
+    return Target(
+        states,
+        actions,
+        final_states,
+        initial_state,
+        transition_function,
         policy,
         reward,
     )
-    return target

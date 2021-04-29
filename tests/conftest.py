@@ -6,6 +6,7 @@ from stochastic_service_composition.services import (
     Service,
     build_service_from_transitions,
 )
+from stochastic_service_composition.target import Target, build_target_from_transitions
 from stochastic_service_composition.types import TransitionFunction
 
 
@@ -108,3 +109,38 @@ def user_behaviour() -> Service:
 def all_services(request):
     """Return all test services."""
     return request.param
+
+
+@pytest.fixture()
+def target_service():
+    """Build the target service."""
+    transition_function = {
+        "t0": {
+            "hot_air_on": ("t1", 0.6, 5),
+            "move_to_kitchen": ("t8", 0.2, 3),
+            "open_door_kitchen": ("t7", 0.2, 2),
+        },
+        "t1": {"fill_up_bathtub": ("t2", 0.7, 4), "hot_air_on": ("t1", 0.3, 2)},
+        "t2": {
+            "move_to_bathroom": ("t3", 0.5, 3),
+            "open_door_bathroom": ("t2", 0.5, 2),
+        },
+        "t3": {"move_to_bathroom": ("t3", 0.2, 4), "wash": ("t4", 0.8, 8)},
+        "t4": {"move_to_bedroom": ("t5", 1.0, 10)},
+        "t5": {"empty_bathtub": ("t6", 0.9, 7), "move_to_bedroom": ("t5", 0.1, 3)},
+        "t6": {"air_off": ("t7", 1.0, 10)},
+        "t7": {"move_to_kitchen": ("t8", 0.5, 5), "open_door_kitchen": ("t7", 0.5, 4)},
+        "t8": {
+            "cook_eggs": ("t9", 0.6, 7),
+            "move_to_kitchen": ("t8", 0.2, 5),
+            "prepare_tea": ("t0", 0.2, 2),
+        },
+        "t9": {"no_op": ("t0", 0.8, 1), "vent_kitchen": ("t9", 0.2, 1)},
+    }
+
+    initial_state = "t0"
+    final_states = {"t0"}
+
+    return build_target_from_transitions(
+        transition_function, initial_state, final_states
+    )
