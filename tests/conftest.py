@@ -69,12 +69,40 @@ def kitchen_exhaust_fan_device() -> Service:
     return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
+@pytest.fixture
+def user_behaviour() -> Service:
+    """It is the user behaviour service."""
+    transitions: TransitionFunction = {
+        "s0": {
+            "move_to_bedroom": "s0",
+            "move_to_bathroom": "s1",
+            "move_to_kitchen": "s3",
+        },
+        "s1": {
+            "move_to_bathroom": "s1",
+            "wash": "s2",
+        },
+        "s2": {
+            "move_to_bedroom": "s0",
+        },
+        "s3": {
+            "move_to_kitchen": "s3",
+            "cook_eggs": "s0",
+            "prepare_tea": "s0",
+        },
+    }
+    initial_state = "s0"
+    final_states = {"s0"}
+    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+
+
 @pytest.fixture(
     params=[
         lazy_fixture("bathroom_heating_device"),
         lazy_fixture("bathtub_device"),
         lazy_fixture("door_device"),
         lazy_fixture("kitchen_exhaust_fan_device"),
+        lazy_fixture("user_behaviour"),
     ]
 )
 def all_services(request):
