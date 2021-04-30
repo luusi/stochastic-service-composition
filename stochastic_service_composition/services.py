@@ -124,9 +124,9 @@ def build_service_from_transitions(
     return Service(states, actions, final_states, initial_state, transition_function)
 
 
-def product(*services: Service) -> Service:
+def build_system_service(*services: Service) -> Service:
     """
-    Do the product between services.
+    Do the build_system_service between services.
 
     :param services: a list of service instances
     :return: the system service

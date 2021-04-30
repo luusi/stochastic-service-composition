@@ -4,25 +4,29 @@ from typing import Deque, Dict, Tuple
 
 from mdp_dp_rl.processes.mdp import MDP
 
-from stochastic_service_composition.services import Service, product
+from stochastic_service_composition.services import Service, build_system_service
 from stochastic_service_composition.target import Target
 from stochastic_service_composition.types import Action, State
 
+COMPOSITION_MDP_INITIAL_STATE = 0
+COMPOSITION_MDP_INITIAL_ACTION = -1
 
-def composition_mdp(target: Target, *services: Service) -> MDP:
+
+def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> MDP:
     """
     Compute the composition MDP.
 
     :param target: the target service.
     :param services: the community of services.
+    :param gamma: the discount factor.
     :return: the composition MDP.
     """
-    system_service = product(*services)
+    system_service = build_system_service(*services)
 
-    initial_state = 0
+    initial_state = COMPOSITION_MDP_INITIAL_STATE
     # one action per service (1..n) + the initial action (0)
     actions = set(range(len(services)))
-    initial_action = -1
+    initial_action = COMPOSITION_MDP_INITIAL_ACTION
     actions.add(initial_action)
 
     transition_function: Dict[
@@ -76,4 +80,4 @@ def composition_mdp(target: Target, *services: Service) -> MDP:
                     next_reward,
                 )
 
-    return MDP(transition_function, 0.99)
+    return MDP(transition_function, gamma)
