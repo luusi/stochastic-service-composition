@@ -2,7 +2,7 @@
 from graphviz import Digraph
 
 from stochastic_service_composition.rendering import service_to_graphviz
-from stochastic_service_composition.services import Service, product
+from stochastic_service_composition.services import Service, build_system_service
 
 
 class TestInitialization:
@@ -56,50 +56,53 @@ def test_initialization_from_transitions(all_services):
     """
 
 
-def test_product_one_state(kitchen_exhaust_fan_device, door_device):
-    """Test the product between two simple services (one state each)."""
-    system_service = product(kitchen_exhaust_fan_device, door_device)
+def test_product_one_state(kitchen_exhaust_fan_device, bathroom_door_device):
+    """Test the build_system_service between two simple services (one state each)."""
+    system_service = build_system_service(
+        kitchen_exhaust_fan_device, bathroom_door_device
+    )
 
     # since the two operands have only one state, also the
-    #  product has one state.
+    #  build_system_service has one state.
     assert len(system_service.states) == 1
     assert system_service.states == {("unique", "unique")}
-    assert system_service.actions == {("vent_kitchen", 0), ("close", 1), ("open", 1)}
+    assert system_service.actions == {
+        ("open_door_bathroom", 1),
+        ("close_door_bathroom", 1),
+        ("vent_kitchen", 0),
+    }
     assert system_service.initial_state == ("unique", "unique")
     assert system_service.final_states == {("unique", "unique")}
     assert system_service.transition_function == {
         ("unique", "unique"): {
+            ("close_door_bathroom", 1): ("unique", "unique"),
+            ("open_door_bathroom", 1): ("unique", "unique"),
             ("vent_kitchen", 0): ("unique", "unique"),
-            ("open", 1): ("unique", "unique"),
-            ("close", 1): ("unique", "unique"),
         }
     }
 
 
-def test_product_many_states(bathtub_device, door_device):
-    """Test the product between two services (more states)."""
-    system_service = product(bathtub_device, door_device)
+def test_product_many_states(bathtub_device, kitchen_exhaust_fan_device):
+    """Test the build_system_service between two services (more states)."""
+    system_service = build_system_service(bathtub_device, kitchen_exhaust_fan_device)
 
     assert len(system_service.states) == 2
     assert system_service.states == {("empty", "unique"), ("filled", "unique")}
     assert system_service.actions == {
-        ("fill_up_buthub", 0),
-        ("empty_buthub", 0),
-        ("open", 1),
-        ("close", 1),
+        ("vent_kitchen", 1),
+        ("fill_up_bathtub", 0),
+        ("empty_bathtub", 0),
     }
     assert system_service.initial_state == ("empty", "unique")
     assert system_service.final_states == {("empty", "unique")}
     assert system_service.transition_function == {
         ("empty", "unique"): {
-            ("fill_up_buthub", 0): ("filled", "unique"),
-            ("open", 1): ("empty", "unique"),
-            ("close", 1): ("empty", "unique"),
+            ("fill_up_bathtub", 0): ("filled", "unique"),
+            ("vent_kitchen", 1): ("empty", "unique"),
         },
         ("filled", "unique"): {
-            ("empty_buthub", 0): ("empty", "unique"),
-            ("open", 1): ("filled", "unique"),
-            ("close", 1): ("filled", "unique"),
+            ("empty_bathtub", 0): ("empty", "unique"),
+            ("vent_kitchen", 1): ("filled", "unique"),
         },
     }
 
