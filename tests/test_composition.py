@@ -11,7 +11,8 @@ def test_composition(
     target_service,
     bathroom_heating_device,
     bathtub_device,
-    door_device,
+    kitchen_door_device,
+    bathroom_door_device,
     kitchen_exhaust_fan_device,
     user_behaviour,
 ):
@@ -19,7 +20,8 @@ def test_composition(
     services = [
         bathroom_heating_device,
         bathtub_device,
-        door_device,
+        kitchen_door_device,
+        bathroom_door_device,
         kitchen_exhaust_fan_device,
         user_behaviour,
     ]

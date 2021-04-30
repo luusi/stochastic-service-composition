@@ -44,12 +44,26 @@ def bathtub_device() -> Service:
 
 
 @pytest.fixture
-def door_device() -> Service:
-    """Build the door device."""
+def kitchen_door_device() -> Service:
+    """Build the kitchen door device."""
     transitions: TransitionFunction = {
         "unique": {
-            "open": "unique",
-            "close": "unique",
+            "open_door_kitchen": "unique",
+            "close_door_kitchen": "unique",
+        },
+    }
+    final_states = {"unique"}
+    initial_state = "unique"
+    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+
+
+@pytest.fixture
+def bathroom_door_device() -> Service:
+    """Build the bathroom door device."""
+    transitions: TransitionFunction = {
+        "unique": {
+            "open_door_bathroom": "unique",
+            "close_door_bathroom": "unique",
         },
     }
     final_states = {"unique"}
@@ -101,7 +115,8 @@ def user_behaviour() -> Service:
     params=[
         lazy_fixture("bathroom_heating_device"),
         lazy_fixture("bathtub_device"),
-        lazy_fixture("door_device"),
+        lazy_fixture("kitchen_door_device"),
+        lazy_fixture("bathroom_door_device"),
         lazy_fixture("kitchen_exhaust_fan_device"),
         lazy_fixture("user_behaviour"),
     ]
