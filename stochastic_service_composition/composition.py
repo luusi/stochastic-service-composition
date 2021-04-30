@@ -57,7 +57,7 @@ def composition_mdp(target: Target, *services: Service) -> MDP:
             next_transitions = {}
             if symbol in target.transition_function[current_target_state]:
                 next_reward = (
-                    target.policy[current_target_state][symbol]
+                    target.reward[current_target_state][symbol]
                     if (symbol, i)
                     in system_service.transition_function[current_system_state]
                     else 0

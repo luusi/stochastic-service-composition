@@ -83,8 +83,8 @@ def test_product_many_states(bathtub_device, door_device):
     assert len(system_service.states) == 2
     assert system_service.states == {("empty", "unique"), ("filled", "unique")}
     assert system_service.actions == {
-        ("fill_up_buthub", 0),
-        ("empty_buthub", 0),
+        ("fill_up_bathtub", 0),
+        ("empty_bathtub", 0),
         ("open", 1),
         ("close", 1),
     }
@@ -92,12 +92,12 @@ def test_product_many_states(bathtub_device, door_device):
     assert system_service.final_states == {("empty", "unique")}
     assert system_service.transition_function == {
         ("empty", "unique"): {
-            ("fill_up_buthub", 0): ("filled", "unique"),
+            ("fill_up_bathtub", 0): ("filled", "unique"),
             ("open", 1): ("empty", "unique"),
             ("close", 1): ("empty", "unique"),
         },
         ("filled", "unique"): {
-            ("empty_buthub", 0): ("empty", "unique"),
+            ("empty_bathtub", 0): ("empty", "unique"),
             ("open", 1): ("filled", "unique"),
             ("close", 1): ("filled", "unique"),
         },

@@ -34,9 +34,9 @@ def bathtub_device() -> Service:
     """Build the bathtub device."""
     transitions: TransitionFunction = {
         "empty": {
-            "fill_up_buthub": "filled",
+            "fill_up_bathtub": "filled",
         },
-        "filled": {"empty_buthub": "empty"},
+        "filled": {"empty_bathtub": "empty"},
     }
     final_states = {"empty"}
     initial_state = "empty"
