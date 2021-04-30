@@ -76,7 +76,7 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
                         to_be_visited.add(next_state)
                         queue.append(next_state)
                 transition_function.setdefault(current_state, {})[i] = (  # type: ignore
-                    next_transitions,
+                    next_transitions,  # type: ignore
                     next_reward,
                 )
 
