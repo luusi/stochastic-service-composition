@@ -28,6 +28,17 @@ pip install -e .
   At [this page](https://www.graphviz.org/download/) you will
   find the releases for all the supported platform.
 
+
+## Notebooks
+
+To run the notebooks:
+
+```
+PYTHONPATH="$(pwd)" jupyter-notebook
+```
+
+Then via the browser go to `examples/notebooks` to open the notebooks.
+
 ## Tests
 
 To run tests: `tox`
