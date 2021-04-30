@@ -6,8 +6,9 @@ from pathlib import Path
 from graphviz import Digraph
 from IPython.core.display import HTML, SVG, display
 
-from stochastic_service_composition.rendering import service_to_graphviz
+from stochastic_service_composition.rendering import service_to_graphviz, target_to_graphviz
 from stochastic_service_composition.services import Service
+from stochastic_service_composition.target import Target
 
 _default_svg_style = (
     "display: block; margin-left: auto; margin-right: auto; width: 50%;"
@@ -23,6 +24,11 @@ def display_svgs(*filenames, style=_default_svg_style):
 
 def render_service(service: Service, style: str = _default_svg_style):
     digraph = service_to_graphviz(service)
+    render_digraph(digraph, style)
+
+
+def render_target(target: Target, style: str = _default_svg_style):
+    digraph = target_to_graphviz(target)
     render_digraph(digraph, style)
 
 

@@ -43,7 +43,7 @@ class TestInitialization:
         return self.service.initial_state == self.initial_state
 
     def test_transition_function(self):
-        """Test the getter 'transition_function'."""
+        """Test the getter 'dynamics_function'."""
         return self.service.transition_function == self.transition_function
 
 
