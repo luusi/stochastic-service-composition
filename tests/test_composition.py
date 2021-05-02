@@ -1,4 +1,5 @@
 """This module contains the tests for the target.py module."""
+from graphviz import Digraph
 from mdp_dp_rl.processes.mdp import MDP
 
 from stochastic_service_composition.composition import composition_mdp
@@ -27,6 +28,8 @@ def test_composition(
     ]
     mdp = composition_mdp(target_service, *services)
     assert isinstance(mdp, MDP)
+    mdp_graphviz = mdp_to_graphviz(mdp)
+    assert isinstance(mdp_graphviz, Digraph)
 
 
 def test_composition_with_sink_states():
@@ -69,3 +72,17 @@ def test_composition_with_sink_states():
 
     mdp = composition_mdp(target, login_service, form_service)
     assert isinstance(mdp, MDP)
+    mdp_graphviz = mdp_to_graphviz(mdp)
+    assert isinstance(mdp_graphviz, Digraph)
+
+
+def test_garden_bots_system_composition(
+    garden_bots_system_target, bcleaner_service, bmulti_service, bplucker_service
+):
+    """Test the garden bots system composition."""
+    mdp = composition_mdp(
+        garden_bots_system_target, bcleaner_service, bmulti_service, bplucker_service
+    )
+    assert isinstance(mdp, MDP)
+    mdp_graphviz = mdp_to_graphviz(mdp)
+    assert isinstance(mdp_graphviz, Digraph)

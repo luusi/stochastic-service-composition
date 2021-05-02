@@ -10,6 +10,7 @@ from mdp_dp_rl.algorithms.dp.dp_analytic import DPAnalytic
 from mdp_dp_rl.processes.det_policy import DetPolicy
 from mdp_dp_rl.processes.mdp import MDP
 from mdp_dp_rl.processes.policy import Policy
+from mdp_dp_rl.utils.standard_typevars import VFDictType, QFDictType
 
 from stochastic_service_composition.rendering import service_to_graphviz, target_to_graphviz, mdp_to_graphviz
 from stochastic_service_composition.services import Service
@@ -62,6 +63,22 @@ def print_policy_data(policy: Policy):
 
 @print_policy_data.register(DetPolicy)
 def print_policy_data(policy: DetPolicy):
-    for state, action_probs in policy.policy_data.items():
+    print("Policy:")
+    for state, action_probs in sorted(policy.policy_data.items()):
         unique_action = list(action_probs)[0]
-        print(f"State={state}, Action={unique_action}")
+        print(f"State={state},\tAction={unique_action}")
+
+
+def print_value_function(value_function: VFDictType):
+    print("Value function:")
+    for state, value in sorted(value_function.items()):
+        print(f"State={state},\tvalue={value}")
+
+
+def print_q_value_function(q_value_function: QFDictType):
+    print("Q-value function:")
+    for state, action_value in sorted(q_value_function.items()):
+        print(f"State={state}:")
+        for action, value in sorted(action_value.items()):
+            print(f"\tAction={action},\tValue={value}")
+        print()
