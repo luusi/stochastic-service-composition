@@ -1,6 +1,6 @@
 """This module implements the algorithm to compute the system-target MDP."""
 from collections import deque
-from typing import Deque, Dict, Tuple
+from typing import Deque, Dict, Set, Tuple
 
 from mdp_dp_rl.processes.mdp import MDP
 
@@ -26,7 +26,7 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
 
     initial_state = COMPOSITION_MDP_INITIAL_STATE
     # one action per service (1..n) + the initial action (0)
-    actions = set(range(len(services)))
+    actions: Set[Action] = set(range(len(services)))
     initial_action = COMPOSITION_MDP_INITIAL_ACTION
     actions.add(initial_action)
 
@@ -91,6 +91,9 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
         # - reward 0
         if current_state not in transition_function:
             transition_function[current_state] = {}
-            transition_function[current_state][COMPOSITION_MDP_UNDEFINED_ACTION] = ({current_state: 1.0}, 0.0)  # type: ignore
+            transition_function[current_state][COMPOSITION_MDP_UNDEFINED_ACTION] = (
+                {current_state: 1.0},
+                0.0,
+            )  # type: ignore
 
     return MDP(transition_function, gamma)

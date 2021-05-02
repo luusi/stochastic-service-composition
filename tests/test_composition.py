@@ -33,29 +33,27 @@ def test_composition_with_sink_states():
     """Test a composition with sink states."""
     login_service = build_service_from_transitions(
         {
-            "s0": {
-                "login": "s1"
-            },
+            "s0": {"login": "s1"},
             "s1": {
                 "logout": "s0",
                 "country": "error",
                 "currency": "error",
-                "stock": "error"
+                "stock": "error",
             },
-            "error": {}
+            "error": {},
         },
         "s0",
-        {"s0"}
+        {"s0"},
     )
 
     form_service = build_service_from_transitions(
         {
             "s0": {"login": "error", "logout": "error", "country": "s1"},
             "s1": {"currency": "s0", "stock": "s0"},
-            "error": {}
+            "error": {},
         },
         "s0",
-        {"s0"}
+        {"s0"},
     )
 
     target = build_target_from_transitions(
@@ -66,7 +64,7 @@ def test_composition_with_sink_states():
             "s3": {"logout": ("s0", 1.0, 1.0)},
         },
         "s0",
-        {"s0"}
+        {"s0"},
     )
 
     mdp = composition_mdp(target, login_service, form_service)
