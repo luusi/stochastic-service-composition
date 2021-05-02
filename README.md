@@ -52,3 +52,16 @@ To run only the linters:
 - `tox -e isort-check`
 
 Please look at the `tox.ini` file for the full list of supported commands. 
+
+## Docs
+
+To build the docs: `mkdocs build`
+
+To view documentation in a browser: `mkdocs serve`
+and then go to [http://localhost:8000](http://localhost:8000)
+
+## License
+
+`stochastic_service_composition` is released under the MIT license.
+
+Copyright 2021 Luciana Silo

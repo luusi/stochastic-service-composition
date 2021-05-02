@@ -23,7 +23,13 @@ isort = "*"
 pytest-lazy-fixture = "*"
 mypy = "*"
 hypothesis = "*"
-
+mkdocs = "*"
+mkdocs-material = "*"
+markdown-include = "*"
+pymdown-extensions = "*"
+markdown = "*"
+mknotebooks = "*"
+mkdocs-bibtex = "*"
 
 [requires]
 python_version = "3.8"

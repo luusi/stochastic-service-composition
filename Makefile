@@ -92,3 +92,12 @@ coverage: ## check code coverage quickly with the default Python
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
+
+docs: ## generate MkDocs HTML documentation, including API docs
+	mkdocs build --clean
+	$(BROWSER) site/index.html
+
+servedocs: docs ## compile the docs watching for changes
+	mkdocs build --clean
+	python -c 'print("###### Starting local server. Press Control+C to stop server ######")'
+	mkdocs serve
