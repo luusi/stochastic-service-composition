@@ -11,9 +11,12 @@ from stochastic_service_composition.types import Action, State
 COMPOSITION_MDP_INITIAL_STATE = 0
 COMPOSITION_MDP_INITIAL_ACTION = "initial"
 COMPOSITION_MDP_UNDEFINED_ACTION = "undefined"
+DEFAULT_GAMMA = 0.9
 
 
-def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> MDP:
+def composition_mdp(
+    target: Target, *services: Service, gamma: float = DEFAULT_GAMMA
+) -> MDP:
     """
     Compute the composition MDP.
 
