@@ -31,10 +31,10 @@ pip install -e .
 
 ## Notebooks
 
-To run the notebooks:
+To run the notebooks, activate the virtual environment. Then:
 
 ```
-PYTHONPATH="$(pwd)" jupyter-notebook
+jupyter-notebook
 ```
 
 Then via the browser go to `examples/notebooks` to open the notebooks.
