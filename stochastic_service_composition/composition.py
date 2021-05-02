@@ -1,6 +1,6 @@
 """This module implements the algorithm to compute the system-target MDP."""
 from collections import deque
-from typing import Deque, Dict, Tuple
+from typing import Deque, Dict, List, Set, Tuple
 
 from mdp_dp_rl.processes.mdp import MDP
 
@@ -9,10 +9,14 @@ from stochastic_service_composition.target import Target
 from stochastic_service_composition.types import Action, State
 
 COMPOSITION_MDP_INITIAL_STATE = 0
-COMPOSITION_MDP_INITIAL_ACTION = -1
+COMPOSITION_MDP_INITIAL_ACTION = "initial"
+COMPOSITION_MDP_UNDEFINED_ACTION = "undefined"
+DEFAULT_GAMMA = 0.9
 
 
-def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> MDP:
+def composition_mdp(
+    target: Target, *services: Service, gamma: float = DEFAULT_GAMMA
+) -> MDP:
     """
     Compute the composition MDP.
 
@@ -25,9 +29,12 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
 
     initial_state = COMPOSITION_MDP_INITIAL_STATE
     # one action per service (1..n) + the initial action (0)
-    actions = set(range(len(services)))
+    actions: Set[Action] = set(range(len(services)))
     initial_action = COMPOSITION_MDP_INITIAL_ACTION
     actions.add(initial_action)
+
+    # add an 'undefined' action for sink states
+    actions.add(COMPOSITION_MDP_UNDEFINED_ACTION)
 
     transition_function: Dict[
         State, Dict[Action, Tuple[Dict[State, float], float]]
@@ -55,29 +62,54 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
         visited.add(current_state)
         current_system_state, current_target_state, current_symbol = current_state
 
-        for (symbol, i), next_system_state in system_service.transition_function[
-            current_system_state
-        ].items():
+        transition_function[current_state] = {}
+        # index system symbols (action, service_id) by symbol
+        system_symbols: List[Tuple[Action, int]] = list(
+            system_service.transition_function[current_system_state].keys()
+        )
+        system_symbols_by_symbols: Dict[Action, Set[int]] = {}
+        for action, service_id in system_symbols:
+            system_symbols_by_symbols.setdefault(action, set()).add(service_id)
+
+        for i in system_symbols_by_symbols.get(current_symbol, set()):
             next_transitions = {}
-            if symbol in target.transition_function[current_target_state]:
-                next_reward = (
-                    target.reward[current_target_state][symbol]
-                    if (symbol, i)
-                    in system_service.transition_function[current_system_state]
-                    else 0
-                )
-                next_target_state = target.transition_function[current_target_state][
-                    symbol
-                ]
-                for next_symbol, next_prob in target.policy[next_target_state].items():
-                    next_state = (next_system_state, next_target_state, next_symbol)
-                    next_transitions[next_state] = next_prob
-                    if next_state not in visited and next_state not in to_be_visited:
-                        to_be_visited.add(next_state)
-                        queue.append(next_state)
-                transition_function.setdefault(current_state, {})[i] = (  # type: ignore
-                    next_transitions,  # type: ignore
-                    next_reward,
-                )
+            if current_symbol not in target.transition_function[current_target_state]:
+                continue
+            next_reward = (
+                target.reward[current_target_state][current_symbol]
+                if (current_symbol, i)
+                in system_service.transition_function[current_system_state]
+                else 0
+            )
+            next_target_state = target.transition_function[current_target_state][
+                current_symbol
+            ]
+            next_system_state = system_service.transition_function[
+                current_system_state
+            ][(current_symbol, i)]
+            for next_symbol, next_prob in target.policy[next_target_state].items():
+                next_state = (next_system_state, next_target_state, next_symbol)
+                if next_prob == 0.0:
+                    continue
+                next_transitions[next_state] = next_prob
+                if next_state not in visited and next_state not in to_be_visited:
+                    to_be_visited.add(next_state)
+                    queue.append(next_state)
+            transition_function[current_state][i] = (  # type: ignore
+                next_transitions,  # type: ignore
+                next_reward,
+            )
+
+        # states without outgoing transitions are sink states.
+        # add loop transitions with
+        # - 'undefined' action
+        # - probability 1
+        # - reward 0
+        if len(transition_function[current_state]) == 0:
+            transition_function.setdefault(current_state, {})
+            transition_function[current_state][COMPOSITION_MDP_UNDEFINED_ACTION] = (
+                {current_state: 1.0},
+                0.0,
+            )  # type: ignore
 
     return MDP(transition_function, gamma)

@@ -111,6 +111,32 @@ def user_behaviour() -> Service:
     return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
+@pytest.fixture()
+def bcleaner_service() -> Service:
+    """Get the BCleaner service (Yadav & Sardina, 2011)."""
+    return build_service_from_transitions(
+        {"a0": {"clean": "a1"}, "a1": {"empty": "a0"}}, "a0", {"a0"}
+    )
+
+
+@pytest.fixture()
+def bmulti_service() -> Service:
+    """Get the BMulti service (Yadav & Sardina, 2011)."""
+    return build_service_from_transitions(
+        {"b0": {"water": "b0", "pluck": "b1"}, "b1": {"water": "b1", "empty": "b0"}},
+        "b0",
+        {"b0"},
+    )
+
+
+@pytest.fixture()
+def bplucker_service() -> Service:
+    """Get the BPlucker service (Yadav & Sardina, 2011)."""
+    return build_service_from_transitions(
+        {"c0": {"pluck": "c1"}, "c1": {"clean": "c0"}}, "c0", {"c0"}
+    )
+
+
 @pytest.fixture(
     params=[
         lazy_fixture("bathroom_heating_device"),
@@ -119,6 +145,9 @@ def user_behaviour() -> Service:
         lazy_fixture("bathroom_door_device"),
         lazy_fixture("kitchen_exhaust_fan_device"),
         lazy_fixture("user_behaviour"),
+        lazy_fixture("bcleaner_service"),
+        lazy_fixture("bmulti_service"),
+        lazy_fixture("bplucker_service"),
     ]
 )
 def all_services(request):
@@ -158,4 +187,19 @@ def target_service():
 
     return build_target_from_transitions(
         transition_function, initial_state, final_states
+    )
+
+
+@pytest.fixture()
+def garden_bots_system_target():
+    """Get the target of the garden bots system (Yadav & Sardina, 2011)."""
+    return build_target_from_transitions(
+        {
+            "t0": {"clean": ("t1", 1.0, 1.0)},
+            "t1": {"water": ("t2", 0.7, 1.0), "pluck": ("t3", 0.3, 1.0)},
+            "t2": {"empty": ("t0", 1.0, 1.0)},
+            "t3": {"empty": ("t0", 1.0, 1.0)},
+        },
+        "t0",
+        {"t0"},
     )
