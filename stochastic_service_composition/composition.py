@@ -9,7 +9,8 @@ from stochastic_service_composition.target import Target
 from stochastic_service_composition.types import Action, State
 
 COMPOSITION_MDP_INITIAL_STATE = 0
-COMPOSITION_MDP_INITIAL_ACTION = -1
+COMPOSITION_MDP_INITIAL_ACTION = "initial"
+COMPOSITION_MDP_UNDEFINED_ACTION = "undefined"
 
 
 def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> MDP:
@@ -28,6 +29,9 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
     actions = set(range(len(services)))
     initial_action = COMPOSITION_MDP_INITIAL_ACTION
     actions.add(initial_action)
+
+    # add an 'undefined' action for sink states
+    actions.add(COMPOSITION_MDP_UNDEFINED_ACTION)
 
     transition_function: Dict[
         State, Dict[Action, Tuple[Dict[State, float], float]]
@@ -79,5 +83,14 @@ def composition_mdp(target: Target, *services: Service, gamma: float = 0.99) -> 
                     next_transitions,  # type: ignore
                     next_reward,
                 )
+
+        # states without outgoing transitions are sink states.
+        # add loop transitions with
+        # - 'undefined' action
+        # - probability 1
+        # - reward 0
+        if current_state not in transition_function:
+            transition_function[current_state] = {}
+            transition_function[current_state][COMPOSITION_MDP_UNDEFINED_ACTION] = ({current_state: 1.0}, 0.0)  # type: ignore
 
     return MDP(transition_function, gamma)

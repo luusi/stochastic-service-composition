@@ -105,7 +105,7 @@ def mdp_to_graphviz(
     graph.attr(rankdir="LR")
 
     for state in mdp.all_states:
-        shape = "doublecircle" if state in mdp.get_terminal_states() else "circle"
+        shape = "doubleoctagon" if state in mdp.get_terminal_states() else "box"
         if state == COMPOSITION_MDP_INITIAL_STATE:
             graph.node(state2str(state), root="true", shape=shape)
         else:
