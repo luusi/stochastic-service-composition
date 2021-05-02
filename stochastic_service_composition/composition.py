@@ -63,7 +63,7 @@ def composition_mdp(
         current_system_state, current_target_state, current_symbol = current_state
 
         transition_function[current_state] = {}
-        # index symbols (action, service_id) by service_id
+        # index system symbols (action, service_id) by symbol
         system_symbols: List[Tuple[Action, int]] = list(
             system_service.transition_function[current_system_state].keys()
         )
@@ -89,6 +89,8 @@ def composition_mdp(
             ][(current_symbol, i)]
             for next_symbol, next_prob in target.policy[next_target_state].items():
                 next_state = (next_system_state, next_target_state, next_symbol)
+                if next_prob == 0.0:
+                    continue
                 next_transitions[next_state] = next_prob
                 if next_state not in visited and next_state not in to_be_visited:
                     to_be_visited.add(next_state)
