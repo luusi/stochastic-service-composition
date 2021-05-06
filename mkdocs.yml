@@ -1,6 +1,6 @@
 site_name: Stochastic Service Composition
-repo_name: 'marcofavorito/stochastic-service-composition'
-repo_url: https://github.com/marcofavorito/stochastic-service-composition
+repo_name: 'luusi/stochastic-service-composition'
+repo_url: https://github.com/luusi/stochastic-service-composition
 
 nav:
 - Home: index.md
