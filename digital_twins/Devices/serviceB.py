@@ -5,14 +5,14 @@ import json
 
 
 # DEVICE CONFIG GOES HERE
-tenantId = "t7ec70bb3ac254112a24fdcc4b727c12c_hub"
+tenantId = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
 device_password = "secret"
 hub_adapter_host = "mqtt.bosch-iot-hub.com"
-deviceId = "com.bosch.serviceb:bathtub_device"
+deviceId = "com.bosch.services:bathtub_device"
 clientId = deviceId
-authId = "com.bosch.serviceb_bathtub_device"
+authId = "com.bosch.services_bathtub_device"
 certificatePath = "./iothub.crt"
-ditto_topic = "com.bosch.serviceb/bathtub_device"
+ditto_topic = "com.bosch.services/bathtub_device"
 
 
 # The callback for when the client receives a CONNACK response from the server.
