@@ -5,14 +5,14 @@ import json
 
 
 # DEVICE CONFIG GOES HERE
-tenantId = "td6ad5fb9cbb442d19bb31f4b5ac00898_hub"
+tenantId = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
 device_password = "secret"
 hub_adapter_host = "mqtt.bosch-iot-hub.com"
-deviceId = "com.bosch.serviced:kitchen_exhaust_fan_device"
+deviceId = "com.bosch.services:kitchen_exhaust_fan_device"
 clientId = deviceId
-authId = "com.bosch.serviced_kitchen_exhaust_fan_device"
+authId = "com.bosch.services_kitchen_exhaust_fan_device"
 certificatePath = "./iothub.crt"
-ditto_topic = "com.bosch.serviced/kitchen_exhaust_fan_device"
+ditto_topic = "com.bosch.services/kitchen_exhaust_fan_device"
 
 
 # The callback for when the client receives a CONNACK response from the server.
