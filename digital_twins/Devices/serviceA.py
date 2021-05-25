@@ -5,14 +5,14 @@ import json
 
 
 # DEVICE CONFIG GOES HERE
-tenantId = "tc1b77e3f8e8d469aa7541cc1ee6b724e_hub"
+tenantId = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
 device_password = "secret"
 hub_adapter_host = "mqtt.bosch-iot-hub.com"
-deviceId = "com.bosch.servicea:bathroom_heating_device"
+deviceId = "com.bosch.services:bathroom_heating_device"
 clientId = deviceId
-authId =  "com.bosch.servicea_bathroom_heating_device"
+authId =  "com.bosch.services_bathroom_heating_device"
 certificatePath = "./iothub.crt"
-ditto_topic = "com.bosch.servicea/bathroom_heating_device"
+ditto_topic = "com.bosch.services/bathroom_heating_device"
 
 
 
