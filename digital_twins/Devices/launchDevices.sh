@@ -1,6 +1,7 @@
 #!/bin/bash
-python2 serviceA.py & disown
-python2 serviceB.py & disown
-python2 serviceC.py & disown
-python2 serviceD.py & disown
-python2 serviceE.py & disown
+python2 bathroom_heating_device.py & disown
+python2 bathtub_device.py & disown
+python2 door_device.py & disown
+python2 kitchen_exhaust_fan_device.py & disown
+python2 user_behaviour.py & disown
+python2 target.py & disown
