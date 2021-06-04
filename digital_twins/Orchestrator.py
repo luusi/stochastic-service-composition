@@ -13,9 +13,10 @@ from ThingsAPI import *
 async def Orchestrator():
     print("Opening websocket endpoint...")
     uri = "wss://things.eu-1.bosch-iot-suite.com/ws/2"
-    async with websockets.connect(uri, extra_headers=websockets.http.Headers({'Authorization': 'Bearer ' + getToken()})) as websocket:
+    async with websockets.connect(uri, extra_headers=websockets.http.HEADERS({'Authorization': 'Bearer ' + getToken()})) as websocket:
         print("Collecting problem data...")
-	print("Invoking planner...")
+
+
        
     #current_mdp_state= mdp.initial_state
     #policy= mdp.get_policy_with_value_iteration()

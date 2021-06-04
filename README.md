@@ -27,7 +27,7 @@ pip install -e .
 - To use rendering functionalities, you will also need to install Graphviz. 
   At [this page](https://www.graphviz.org/download/) you will
   find the releases for all the supported platform.
-
+  
 
 ## Notebooks
 
@@ -38,6 +38,21 @@ jupyter-notebook
 ```
 
 Then via the browser go to `examples/notebooks` to open the notebooks.
+
+## Digital Twins
+
+The folder `digital_twins` contains the integration of the 
+stochastic service composition with the Bosch IoT Things platform.
+
+To run the examples, go to the terminal and set:
+```
+export PYTHONPATH=".:$PYTHONPATH"
+```
+
+Then, run:
+```
+python digital_twins/main.py --config digital_twins/config.json
+```
 
 ## Tests
 

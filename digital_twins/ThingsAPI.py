@@ -10,6 +10,7 @@ def getToken():
     clientSecret = config.ThingsAPI["clientSecret"]
     scope = config.ThingsAPI["scope"]
 
+
     headers = {
         'accept': '*/*',
         'Content-Type': 'application/x-www-form-urlencoded',

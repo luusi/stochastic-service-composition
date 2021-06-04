@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Optional
 import json
 
-#import netifaces
+import netifaces
 import paho.mqtt.client as mqtt
 
 import datetime, threading, time
@@ -11,28 +11,41 @@ from stochastic_service_composition.services import Service
 from stochastic_service_composition.types import State, Action
 
 DEVICE_ID_PREFIX = "com.bosch.services"
-AUTH_ID_PREFIX = "com.bosch.services_"
 DITTO_PREFIX = "com.bosch.services/"
-TENANT_ID_PREFIX = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
-HUB_ADAPTER_HOST_PREFIX = "mqtt.bosch-iot-hub.com"
+TENANT_ID = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
+HUB_ADAPTER_HOST = "mqtt.bosch-iot-hub.com"
 CERTIFICATE_PATH_ID = "./iothub.crt"
 DEVICE_PASSWORD_ID = "secret"
 # Configuration of client ID and publish topic
 PUBLISH_TOPIC = "telemetry/"
 CLIENT = mqtt.Client
 
+
 class BoschIotDevice(ABC):
     """A Bosch IoT device."""
 
     def __init__(self, device_name: str,
-                 service: Service):
+                 service: Service,
+                 certificate_path: str = CERTIFICATE_PATH_ID):
         self._device_name = device_name
         self._service = service
+        self._certificate_path = certificate_path
 
         self._current_state: Optional[State] = self._service.initial_state
+        self._is_running: bool = False
+        self._terminated = threading.Event()
+
+        self._client = CLIENT(self.client_id)
 
     def reset(self):
+        if self.is_running:
+            raise ValueError("cannote reset while running")
         self._current_state = self._service.initial_state
+
+    @property
+    def is_running(self):
+        """Check whether the device is running."""
+        return self._is_running
 
     @property
     def device_name(self):
@@ -44,15 +57,15 @@ class BoschIotDevice(ABC):
 
     @property
     def tenant_id(self):
-        return f"{TENANT_ID_PREFIX}"
+        return f"{TENANT_ID}"
 
     @property
     def hub_adapter_host(self):
-        return f"{HUB_ADAPTER_HOST_PREFIX}"
+        return f"{HUB_ADAPTER_HOST}"
 
     @property
     def certificate_path(self):
-        return f"{CERTIFICATE_PATH_ID}"
+        return self._certificate_path
 
     @property
     def device_password(self):
@@ -64,7 +77,7 @@ class BoschIotDevice(ABC):
 
     @property
     def auth_id(self):
-        return f"{AUTH_ID_PREFIX}_{self.device_name}"
+        return f"{DEVICE_ID_PREFIX}_{self.device_name}"
 
     @property
     def ditto_topic(self):
@@ -73,10 +86,6 @@ class BoschIotDevice(ABC):
     @property
     def publish_topic(self):
         return f"{PUBLISH_TOPIC}{self.tenant_id}/{self.device_id}"
-
-    @property
-    def client(self):
-        return f"{CLIENT(self.client_id)}"
 
     def on_connect(self, client, userdata, flags, rc):
         """The callback for when the client receives a CONNACK response from the server."""
@@ -89,65 +98,62 @@ class BoschIotDevice(ABC):
         # BEGIN SAMPLE CODE
         client.subscribe("command///req/#")
         # END SAMPLE CODE
-        print("Connected")
+        print("Connected!")
 
     def on_message(self, client, userdata, msg):
         """The callback for when a PUBLISH message is received from the server."""
-        print("Command received...")
+        print(f"Message received: client={client}, userdata={userdata}, msg={msg}")
         cmd = json.loads(msg.payload.decode("utf-8"))
         cmd_name = cmd["topic"].split("/")[-1]
-        params = cmd["value"]
+        print(f"Command: {cmd_name}")
+        print(f"Current state: {self._current_state}")
         self.change_status(json.dumps("busy"))
-        self.execute_command(cmd_name, params)
+        self.execute_command(cmd_name)
         self.change_status(json.dumps("terminated"))
+        print(f"Current state after executing command: {self._current_state}")
+
 
     def execute_command(self, name: Action):
-        transition_from_current_state = self._service.transition_function[self._current_state]
-        next_state = transition_from_current_state[name]
+        transitions_from_current_state = self._service.transition_function[self._current_state]
+        next_state = transitions_from_current_state[name]
         self._current_state = next_state
-        #send_request_to_service(client, service_id, target_action)
+        self.update_state("current_state", self._current_state)
 
     def update_state(self, feature, value):
         payload = '{"topic": "' + self.ditto_topic + \
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/' + feature + '/properties/value/current","value" : ' + value + '}'
-        self.client.publish(self.publish_topic, payload)
+        self._client.publish(self.publish_topic, payload)
 
     def publish_output(self, output):
         payload = '{"topic": "' + self.ditto_topic + \
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/output/properties/value","value" : ' + output + '}'
-        self.client.publish(self.publish_topic, payload)
+        self._client.publish(self.publish_topic, payload)
 
     def change_status(self, status):
         payload = '{"topic": "' + self.ditto_topic + \
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/status/properties/value","value" : ' + status + '}'
-        self.client.publish(self.publish_topic, payload)
+        self._client.publish(self.publish_topic, payload)
 
         # Period for publishing data to the MQTT broker in seconds
         #timePeriod = 10
 
-
-
     def run(self):
-        # Create the MQTT client
-        client = mqtt.Client(self.client_id)
-        client.on_connect = self.on_connect
-        client.on_message = self.on_message
-        client.tls_set(self.certificate_path)
+        self._client.on_connect = self.on_connect
+        self._client.on_message = self.on_message
+        self._client.tls_set(self.certificate_path)
         username = self.auth_id + "@" + self.tenant_id
-        client.username_pw_set(username, self.device_password)
-        client.connect(self.hub_adapter_host, 8883, 60)
+        self._client.username_pw_set(username, self.device_password)
+        self._client.connect(self.hub_adapter_host, 8883, 60)
 
-        client.loop_start()
+        self._client.loop_start()
 
         self._terminated.wait()
 
-        def main(
-                tenant_id: str,
-        ):
-            pass
-
-        if __name__ == "__main__":
-            main()
+    def stop(self):
+        """Stop the running device."""
+        if not self.is_running:
+            raise ValueError("device already stopped")
+        self._terminated.set()
