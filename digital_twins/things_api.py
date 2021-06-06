@@ -18,7 +18,6 @@ SUFFIX_SEARCH_THINGS = "search/things"
 @dataclasses.dataclass(frozen=True)
 class APIConfig:
     uri: str
-    #uri_ws: str
     namespace: str
     client_id: str
     client_secret: str
@@ -31,7 +30,6 @@ def config_from_json(filepath: Path) -> APIConfig:
         data = json.load(file)
     return APIConfig(
         data["uri"],
-        #data["uri_ws"],
         data["namespace"],
         data["client_id"],
         data["client_secret"],
@@ -113,10 +111,10 @@ class ThingsAPI:
         response = requests.post(url + thing_id
                                  + '/inbox/messages/' + message_subject, headers=headers, params=params, json=body)
 
-        if 200 <= response.status_code < 300:
+        if not 200 <= response.status_code < 300:
             raise Exception(f"error when sending a message: {response.content}")
 
-    def receive_message_from_thing(self, thing_id: str, message_subject: str, body: Dict, timeout: int):
+    def receive_message_from_thing(self, thing_id: str, message_subject: str, body: Dict, timeout: int = 10):
         headers = self._header
         params = (
             ('timeout', str(timeout)),
@@ -125,7 +123,7 @@ class ThingsAPI:
         thing_id = urllib.parse.quote(thing_id, safe='')
         response = requests.post(url + thing_id
                                  + '/outbox/messages/' + message_subject, headers=headers, params=params, json=body)
-        if 200 <= response.status_code < 300:
+        if not 200 <= response.status_code < 300:
             raise Exception(f"error when receiving message from thing: {response.content}")
 
     def change_property(self, thing_id: str, feature_id: str, property_path: str, body: Dict):
@@ -138,5 +136,5 @@ class ThingsAPI:
                                 '/features/' + feature_id + '/properties/' + property_path,
                                 headers=headers, json=body)
 
-        if 200 <= response.status_code < 300:
+        if not 200 <= response.status_code < 300:
             raise Exception(f"error when changing property: {response.content}")

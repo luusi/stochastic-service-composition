@@ -35,7 +35,7 @@ logger = setup_logger()
 
 parser = argparse.ArgumentParser("main")
 parser.add_argument("--config", type=str, default="config.json", help="Path to configuration file (in JSON format).")
-parser.add_argument("--timeout", type=int, default=60, help="Timeout to wait message sent correctly.")
+parser.add_argument("--timeout", type=int, default=0, help="Timeout to wait message sent correctly.")
 
 # TODO temporary solution. Instead, do a search for available things
 
@@ -137,7 +137,7 @@ def main(config: str, timeout: int):
         service_index = orchestrator_choice
         chosen_thing_id = service_ids[service_index]
         print(f"Sending action to thing {chosen_thing_id}")
-        #withouth timeout the follow function is not block
+        #without timeout the follow function is not blocking
         response = api.send_message_to_thing(chosen_thing_id, target_action, {}, timeout)
 
 

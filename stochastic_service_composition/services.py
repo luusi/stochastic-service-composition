@@ -3,7 +3,7 @@
 from collections import deque
 from typing import Deque, Dict, Set, Tuple
 
-from stochastic_service_composition.types import Action, State, TransitionFunction
+from stochastic_service_composition.types import Action, State, TransitionFunction, Prob, Reward
 
 
 class Service:
@@ -15,7 +15,8 @@ class Service:
         actions: Set[Action],
         final_states: Set[State],
         initial_state: State,
-        transition_function: Dict[State, Dict[Action, State]],
+        transition_function: Dict[State, Dict[Action, Dict[State, Tuple[Prob, Reward]]]],
+
     ):
         """
         Initialize the service.
@@ -91,8 +92,42 @@ class Service:
                 ), f"action {action} is not in the set of actions"
 
 
-def build_service_from_transitions(
+def build_deterministic_service_from_transitions(
     transition_function: TransitionFunction,
+    initial_state: State,
+    final_states: Set[State],
+) -> Service:
+    """
+    Initialize a service from transitions, initial state and final states.
+
+    The set of states and the set of actions are parsed from the transition function.
+    This will guarantee that all the states are reachable.
+
+    :param transition_function: the transition function
+    :param initial_state: the initial state
+    :param final_states: the final states
+    :return: the service
+    """
+    states = set()
+    actions = set()
+    new_transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]] = {}
+    for start_state, transitions_by_action in transition_function.items():
+        states.add(start_state)
+        new_transition_function[start_state] = {}
+        for action, next_state in transitions_by_action.items():
+            actions.add(action)
+            states.add(next_state)
+
+    unreachable_final_states = final_states.difference(states)
+    assert (
+        len(unreachable_final_states) == 0
+    ), f"the following final states are not in the transition function: {unreachable_final_states}"
+    assert initial_state in states, "initial state not in the set of states"
+
+    return Service(states, actions, final_states, initial_state, new_transition_function)
+
+def build_service_from_transitions(
+    transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]],
     initial_state: State,
     final_states: Set[State],
 ) -> Service:
@@ -124,6 +159,7 @@ def build_service_from_transitions(
     return Service(states, actions, final_states, initial_state, transition_function)
 
 
+
 def build_system_service(*services: Service) -> Service:
     """
     Do the build_system_service between services.
@@ -139,7 +175,7 @@ def build_system_service(*services: Service) -> Service:
     new_initial_state: Tuple[State, ...] = tuple(
         service.initial_state for service in services
     )
-    new_transition_function: TransitionFunction = {}
+    new_transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]] = {}
 
     queue: Deque[Tuple[State, ...]] = deque()
     queue.append(new_initial_state)

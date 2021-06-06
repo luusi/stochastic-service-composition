@@ -39,7 +39,7 @@ class BoschIotDevice(ABC):
 
     def reset(self):
         if self.is_running:
-            raise ValueError("cannote reset while running")
+            raise ValueError("cannot reset while running")
         self._current_state = self._service.initial_state
 
     @property
