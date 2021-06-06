@@ -4,7 +4,10 @@ from mdp_dp_rl.processes.mdp import MDP
 
 from stochastic_service_composition.composition import composition_mdp
 from stochastic_service_composition.rendering import mdp_to_graphviz
-from stochastic_service_composition.services import build_service_from_transitions
+from stochastic_service_composition.services import (
+    build_service_from_transitions,
+    build_deterministic_service_from_transitions,
+)
 from stochastic_service_composition.target import build_target_from_transitions
 
 
@@ -34,7 +37,7 @@ def test_composition(
 
 def test_composition_with_sink_states():
     """Test a composition with sink states."""
-    login_service = build_service_from_transitions(
+    login_service = build_deterministic_service_from_transitions(
         {
             "s0": {"login": "s1"},
             "s1": {
@@ -49,7 +52,7 @@ def test_composition_with_sink_states():
         {"s0"},
     )
 
-    form_service = build_service_from_transitions(
+    form_service = build_deterministic_service_from_transitions(
         {
             "s0": {"login": "error", "logout": "error", "country": "s1"},
             "s1": {"currency": "s0", "stock": "s0"},

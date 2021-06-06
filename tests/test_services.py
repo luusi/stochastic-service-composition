@@ -15,8 +15,8 @@ class TestInitialization:
         cls.final_states = {"s1"}
         cls.initial_state = "s0"
         cls.transition_function = {
-            "s0": {"a": "s1"},
-            "s1": {"b": "s0"},
+            "s0": {"a": ({"s1": 1.0}, 0.0)},
+            "s1": {"b": ({"s0": 1.0}, 0.0)},
         }
         cls.service = Service(
             cls.states,
@@ -75,9 +75,9 @@ def test_product_one_state(kitchen_exhaust_fan_device, bathroom_door_device):
     assert system_service.final_states == {("unique", "unique")}
     assert system_service.transition_function == {
         ("unique", "unique"): {
-            ("close_door_bathroom", 1): ("unique", "unique"),
-            ("open_door_bathroom", 1): ("unique", "unique"),
-            ("vent_kitchen", 0): ("unique", "unique"),
+            ("close_door_bathroom", 1): ({("unique", "unique"): 1.0}, 0.0),
+            ("open_door_bathroom", 1): ({("unique", "unique"): 1.0}, 0.0),
+            ("vent_kitchen", 0): ({("unique", "unique"): 1.0}, 0.0),
         }
     }
 
@@ -97,12 +97,12 @@ def test_product_many_states(bathtub_device, kitchen_exhaust_fan_device):
     assert system_service.final_states == {("empty", "unique")}
     assert system_service.transition_function == {
         ("empty", "unique"): {
-            ("fill_up_bathtub", 0): ("filled", "unique"),
-            ("vent_kitchen", 1): ("empty", "unique"),
+            ("fill_up_bathtub", 0): ({("filled", "unique"): 1.0}, 0.0),
+            ("vent_kitchen", 1): ({("empty", "unique"): 1.0}, 0.0),
         },
         ("filled", "unique"): {
-            ("empty_bathtub", 0): ("empty", "unique"),
-            ("vent_kitchen", 1): ("filled", "unique"),
+            ("empty_bathtub", 0): ({("empty", "unique"): 1.0}, 0.0),
+            ("vent_kitchen", 1): ({("filled", "unique"): 1.0}, 0.0),
         },
     }
 

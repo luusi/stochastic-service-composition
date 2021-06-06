@@ -3,7 +3,14 @@
 from collections import deque
 from typing import Deque, Dict, Set, Tuple
 
-from stochastic_service_composition.types import Action, State, TransitionFunction, Prob, Reward
+from stochastic_service_composition.types import (
+    Action,
+    State,
+    TransitionFunction,
+    Prob,
+    Reward,
+    MDPDynamics,
+)
 
 
 class Service:
@@ -15,8 +22,7 @@ class Service:
         actions: Set[Action],
         final_states: Set[State],
         initial_state: State,
-        transition_function: Dict[State, Dict[Action, Dict[State, Tuple[Prob, Reward]]]],
-
+        transition_function: MDPDynamics,
     ):
         """
         Initialize the service.
@@ -110,13 +116,14 @@ def build_deterministic_service_from_transitions(
     """
     states = set()
     actions = set()
-    new_transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]] = {}
+    new_transition_function: MDPDynamics = {}
     for start_state, transitions_by_action in transition_function.items():
         states.add(start_state)
         new_transition_function[start_state] = {}
         for action, next_state in transitions_by_action.items():
             actions.add(action)
             states.add(next_state)
+            new_transition_function[start_state][action] = ({next_state: 1.0}, 0.0)
 
     unreachable_final_states = final_states.difference(states)
     assert (
@@ -124,10 +131,13 @@ def build_deterministic_service_from_transitions(
     ), f"the following final states are not in the transition function: {unreachable_final_states}"
     assert initial_state in states, "initial state not in the set of states"
 
-    return Service(states, actions, final_states, initial_state, new_transition_function)
+    return Service(
+        states, actions, final_states, initial_state, new_transition_function
+    )
+
 
 def build_service_from_transitions(
-    transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]],
+    transition_function: MDPDynamics,
     initial_state: State,
     final_states: Set[State],
 ) -> Service:
@@ -146,9 +156,9 @@ def build_service_from_transitions(
     actions = set()
     for start_state, transitions_by_action in transition_function.items():
         states.add(start_state)
-        for action, next_state in transitions_by_action.items():
+        for action, (next_states, reward) in transitions_by_action.items():
             actions.add(action)
-            states.add(next_state)
+            states.update(next_states.keys())
 
     unreachable_final_states = final_states.difference(states)
     assert (
@@ -157,7 +167,6 @@ def build_service_from_transitions(
     assert initial_state in states, "initial state not in the set of states"
 
     return Service(states, actions, final_states, initial_state, transition_function)
-
 
 
 def build_system_service(*services: Service) -> Service:
@@ -175,7 +184,7 @@ def build_system_service(*services: Service) -> Service:
     new_initial_state: Tuple[State, ...] = tuple(
         service.initial_state for service in services
     )
-    new_transition_function: Dict[State, Dict[Action, Dict[State, Tuple[float, float]]]] = {}
+    new_transition_function: MDPDynamics = {}
 
     queue: Deque[Tuple[State, ...]] = deque()
     queue.append(new_initial_state)
@@ -197,21 +206,24 @@ def build_system_service(*services: Service) -> Service:
         for i in range(len(services)):
             current_service: Service = services[i]
             current_service_state = list(next_state_template)[i]
-            for a, next_service_state in current_service.transition_function[
+            for a, (next_service_states, reward) in current_service.transition_function[
                 current_service_state
             ].items():
-                # we need to transform it to list temporarily
-                next_state_list = list(next_state_template)
-                next_state_list[i] = next_service_state
-                next_state = tuple(next_state_list)
                 symbol = (a, i)
                 actions.add(symbol)
-                new_transition_function.setdefault(current_state, {})[symbol] = tuple(
-                    next_state
+                new_transition_function.setdefault(current_state, {})[symbol] = (
+                    {},
+                    reward,
                 )
-                if next_state not in visited and next_state not in to_be_visited:
-                    to_be_visited.add(next_state)
-                    queue.append(next_state)
+                for next_service_state, prob in next_service_states.items():
+                    # we need to transform it to list temporarily
+                    next_state_list = list(next_state_template)
+                    next_state_list[i] = next_service_state
+                    next_state = tuple(next_state_list)
+                    new_transition_function[current_state][symbol][0][next_state] = prob
+                    if next_state not in visited and next_state not in to_be_visited:
+                        to_be_visited.add(next_state)
+                        queue.append(next_state)
 
     new_service = Service(
         states=new_states,

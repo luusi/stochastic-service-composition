@@ -4,7 +4,7 @@ from pytest_lazyfixture import lazy_fixture
 
 from stochastic_service_composition.services import (
     Service,
-    build_service_from_transitions,
+    build_deterministic_service_from_transitions,
 )
 from stochastic_service_composition.target import Target, build_target_from_transitions
 from stochastic_service_composition.types import TransitionFunction
@@ -26,7 +26,7 @@ def bathroom_heating_device() -> Service:
     }
     final_states = {"air_off"}
     initial_state = "air_off"
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def bathtub_device() -> Service:
     }
     final_states = {"empty"}
     initial_state = "empty"
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def kitchen_door_device() -> Service:
     }
     final_states = {"unique"}
     initial_state = "unique"
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture
@@ -68,7 +68,7 @@ def bathroom_door_device() -> Service:
     }
     final_states = {"unique"}
     initial_state = "unique"
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ def kitchen_exhaust_fan_device() -> Service:
     }
     final_states = {"unique"}
     initial_state = "unique"
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture
@@ -108,13 +108,13 @@ def user_behaviour() -> Service:
     }
     initial_state = "s0"
     final_states = {"s0"}
-    return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
+    return build_deterministic_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
 @pytest.fixture()
 def bcleaner_service() -> Service:
     """Get the BCleaner service (Yadav & Sardina, 2011)."""
-    return build_service_from_transitions(
+    return build_deterministic_service_from_transitions(
         {"a0": {"clean": "a1"}, "a1": {"empty": "a0"}}, "a0", {"a0"}
     )
 
@@ -122,7 +122,7 @@ def bcleaner_service() -> Service:
 @pytest.fixture()
 def bmulti_service() -> Service:
     """Get the BMulti service (Yadav & Sardina, 2011)."""
-    return build_service_from_transitions(
+    return build_deterministic_service_from_transitions(
         {"b0": {"water": "b0", "pluck": "b1"}, "b1": {"water": "b1", "empty": "b0"}},
         "b0",
         {"b0"},
@@ -132,7 +132,7 @@ def bmulti_service() -> Service:
 @pytest.fixture()
 def bplucker_service() -> Service:
     """Get the BPlucker service (Yadav & Sardina, 2011)."""
-    return build_service_from_transitions(
+    return build_deterministic_service_from_transitions(
         {"c0": {"pluck": "c1"}, "c1": {"clean": "c0"}}, "c0", {"c0"}
     )
 

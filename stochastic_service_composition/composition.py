@@ -6,7 +6,7 @@ from mdp_dp_rl.processes.mdp import MDP
 
 from stochastic_service_composition.services import Service, build_system_service
 from stochastic_service_composition.target import Target
-from stochastic_service_composition.types import Action, State
+from stochastic_service_composition.types import Action, State, MDPDynamics
 
 COMPOSITION_MDP_INITIAL_STATE = 0
 COMPOSITION_MDP_INITIAL_ACTION = "initial"
@@ -36,9 +36,7 @@ def composition_mdp(
     # add an 'undefined' action for sink states
     actions.add(COMPOSITION_MDP_UNDEFINED_ACTION)
 
-    transition_function: Dict[
-        State, Dict[Action, Tuple[Dict[State, float], float]]
-    ] = {}
+    transition_function: MDPDynamics = {}
 
     visited = set()
     to_be_visited = set()
@@ -84,20 +82,21 @@ def composition_mdp(
             next_target_state = target.transition_function[current_target_state][
                 current_symbol
             ]
-            next_system_state = system_service.transition_function[
+            next_system_states, next_system_reward = system_service.transition_function[
                 current_system_state
             ][(current_symbol, i)]
             for next_symbol, next_prob in target.policy[next_target_state].items():
-                next_state = (next_system_state, next_target_state, next_symbol)
-                if next_prob == 0.0:
-                    continue
-                next_transitions[next_state] = next_prob
-                if next_state not in visited and next_state not in to_be_visited:
-                    to_be_visited.add(next_state)
-                    queue.append(next_state)
+                for next_system_state, next_system_prob in next_system_states.items():
+                    next_state = (next_system_state, next_target_state, next_symbol)
+                    if next_prob * next_system_prob == 0.0:
+                        continue
+                    next_transitions[next_state] = next_prob * next_system_prob
+                    if next_state not in visited and next_state not in to_be_visited:
+                        to_be_visited.add(next_state)
+                        queue.append(next_state)
             transition_function[current_state][i] = (  # type: ignore
                 next_transitions,  # type: ignore
-                next_reward,
+                next_reward + next_system_reward,
             )
 
         # states without outgoing transitions are sink states.
