@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == "__main__":
     device_name = "door_device"
-    certificate_path = "digital_twins/Devices/iothub.crt"
+    certificate_path = "digital_twins/temp/iothub.crt"
     thing_id = f"com.bosch.services:{device_name}"
 
     config = config_from_json(Path("digital_twins/config.json"))

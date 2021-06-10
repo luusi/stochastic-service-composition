@@ -1,23 +1,21 @@
 import argparse
 import asyncio
 import json
+import urllib.parse
+
+
+import websockets
 import logging
 from pathlib import Path
-from typing import Dict
 
-from pprint import pprint
-
-import requests
-import websockets as websockets
 from mdp_dp_rl.processes.mdp import MDP
 
 from digital_twins.Devices.utils import service_from_json, target_from_json
-from digital_twins.constants import ACCESS_BOSCH_IOT_URL, HEADERS
+from digital_twins.constants import WS_URI
 from digital_twins.target_simulator import TargetSimulator
 from digital_twins.things_api import config_from_json, ThingsAPI
 from stochastic_service_composition.composition import composition_mdp
-from stochastic_service_composition.services import Service
-from stochastic_service_composition.target import Target, build_target_from_transitions
+from stochastic_service_composition.target import Target
 
 
 def setup_logger():
@@ -85,7 +83,8 @@ parser.add_argument("--timeout", type=int, default=0, help="Timeout to wait mess
     )"""
 
 
-def main(config: str, timeout: int):
+async def main(config: str, timeout: int):
+
     """Run the main."""
     services = []
     service_ids = []
@@ -95,61 +94,77 @@ def main(config: str, timeout: int):
     for element in data:
         service = service_from_json(element)
         services.append(service)
+
         service_ids.append(element["thingId"])
+
 
     data = api.search_targets("")
     assert len(data) == 1
     target: Target = target_from_json(data[0])
 
+    print("Opening websocket endpoint...")
+    ws_uri = "wss://things.eu-1.bosch-iot-suite.com/ws/2"
+    async with websockets.connect(ws_uri, extra_headers=websockets.http.Headers({
+                                      'Authorization': 'Bearer ' + api.get_token()
+                                  })) as websocket:
+        print("Collecting problem data...")
 
+        mdp: MDP = composition_mdp(target, *services)
+        orchestrator_policy = mdp.get_optimal_policy()
+        target_simulator = TargetSimulator(target)
+        system_state = [service.initial_state for service in services]
 
-    """services = []
-    for thing_id in THINGS_IDS:
-        data = api.get_thing(thing_id)
-        assert len(data) == 1
-        service: Service = service_from_json(data[0])
-        services.append(service)
+        iteration = 0
+        while True:
+            current_target_state = target_simulator.current_state
+            target_action = target_simulator.sample_action_and_update_state()
+            print(f"Iteration: {iteration}, target action: {target_action}")
+            current_state = (tuple(system_state), current_target_state, target_action)
 
-    # TODO temporary solution, see above
-    # data = api.get_thing(TARGET_ID)
-    # assert len(data) == 1
-    # target: Target = target_from_json(data[0])
-    target = get_target()"""
+            orchestrator_choice = orchestrator_policy.get_action_for_state(current_state)
+            if orchestrator_choice == "undefined":
+                print(f"Execution failed: no service can execute {target_action} in system state {system_state}")
+                break
+            # send_action_to_service
+            service_index = orchestrator_choice
+            chosen_thing_id = service_ids[service_index]
+            event_cmd = "START-SEND-EVENTS?filter="
+            event_cmd += '(eq(thingId,"' + chosen_thing_id + \
+                         '"))'
+            print("EVENT_CMD: ", event_cmd)
+            event_cmd = urllib.parse.quote(event_cmd, safe='')
+            print(f"Sending action to thing {chosen_thing_id}: {event_cmd}")
+            await websocket.send(event_cmd)
+            print("Listening to events originating from " + chosen_thing_id)
+            message_receive = await websocket.recv()
+            print("Message received: ", message_receive)
+            if message_receive != "START-SEND-EVENTS:ACK":
+                raise Exception("Ack not received")
 
-    mdp: MDP = composition_mdp(target, *services)
-    orchestrator_policy = mdp.get_optimal_policy()
-    target_simulator = TargetSimulator(target)
-    system_state = [service.initial_state for service in services]
+            print("Sending message to thing: ", chosen_thing_id, target_action, timeout)
+            response = api.send_message_to_thing(chosen_thing_id, target_action, {}, timeout)
+            print(f"Got response: {response}")
+            print("Waiting for update from websocket...")
+            message_receive = await websocket.recv()
+            print(f"Update after change: {message_receive}")
+            json_message = json.loads(message_receive)
+            next_service_state = json_message["value"]
 
+            # compute the next system state
 
-    iteration = 0
-    while True:
-        current_target_state = target_simulator.current_state
-        target_action = target_simulator.sample_action_and_update_state()
-        print(f"Iteration: {iteration}, target action: {target_action}")
-        current_state = (tuple(system_state), current_target_state, target_action)
+            # TODO: TEMPORARY SOLUTION
+            # service = services[service_index]
+            # current_service_state = system_state[service_index]
+            # next_service_states, reward = service.transition_function[current_service_state][target_action]
+            # states, probabilities = zip(*next_service_states.items())
+            # next_service_state = random.choices(states, probabilities)[0]
 
-        orchestrator_choice = orchestrator_policy.get_action_for_state(current_state)
-        if orchestrator_choice == "undefined":
-            print(f"Execution failed: no service can execute {target_action} in system state {system_state}")
-            break
-        # send_action_to_service
-        service_index = orchestrator_choice
-        chosen_thing_id = service_ids[service_index]
-        print(f"Sending action to thing {chosen_thing_id}")
-        #without timeout the follow function is not blocking
-        response = api.send_message_to_thing(chosen_thing_id, target_action, {}, timeout)
-
-
-        # compute the next system state
-        service = services[service_index]
-        current_service_state = system_state[service_index]
-        next_service_state = service.transition_function[current_service_state][target_action]
-        system_state[service_index] = next_service_state
-
-        iteration += 1
+            system_state[service_index] = next_service_state
+            await websocket.send("STOP-SEND-EVENTS")
+            await websocket.recv()
+            iteration += 1
 
 
 if __name__ == "__main__":
     arguments = parser.parse_args()
-    main(arguments.config, arguments.timeout)
+    result = asyncio.get_event_loop().run_until_complete(main(arguments.config, arguments.timeout))

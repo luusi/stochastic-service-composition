@@ -44,7 +44,7 @@ class ThingsAPI:
         """Initialize the class."""
         self.config = config
 
-        self._token = self._get_token()
+        self.token = self.get_token()
 
     @property
     def payload(self) -> Dict:
@@ -55,7 +55,7 @@ class ThingsAPI:
             'scope': self.config.scope
         }
 
-    def _get_token(self):
+    def get_token(self):
         """Get access token from Bosch IoT."""
         payload = self.payload
         response = requests.post(f"{ACCESS_BOSCH_IOT_URL}/token", headers=HEADERS, data=payload)
@@ -68,14 +68,14 @@ class ThingsAPI:
     def _authorization_header(self):
         return {
             'accept': 'application/json',
-            'Authorization': 'Bearer ' + self._token,
+            'Authorization': 'Bearer ' + self.token,
         }
 
     @property
     def _header(self):
         return {
             'accept': '*/*',
-            'Authorization': 'Bearer ' + self._token,
+            'Authorization': 'Bearer ' + self.token,
             'Content-Type': 'application/json',
         }
 
@@ -101,7 +101,7 @@ class ThingsAPI:
     def search_targets(self, namespace: str):
         return self.search_things(namespace, "filter=eq(attributes/type,'target')")
 
-    def send_message_to_thing(self, thing_id: str, message_subject: str, body: Dict, timeout: int = 10):
+    def send_message_to_thing(self, thing_id: str, message_subject: str, body: Dict, timeout: int = 0):
         headers = self._header
         params = (
             ('timeout', str(timeout)),
@@ -111,8 +111,8 @@ class ThingsAPI:
         response = requests.post(url + thing_id
                                  + '/inbox/messages/' + message_subject, headers=headers, params=params, json=body)
 
-        if not 200 <= response.status_code < 300:
-            raise Exception(f"error when sending a message: {response.content}")
+        #if not 200 <= response.status_code < 300:
+            #raise Exception(f"error when sending a message: {response.content}")
 
     def receive_message_from_thing(self, thing_id: str, message_subject: str, body: Dict, timeout: int = 10):
         headers = self._header
@@ -123,8 +123,8 @@ class ThingsAPI:
         thing_id = urllib.parse.quote(thing_id, safe='')
         response = requests.post(url + thing_id
                                  + '/outbox/messages/' + message_subject, headers=headers, params=params, json=body)
-        if not 200 <= response.status_code < 300:
-            raise Exception(f"error when receiving message from thing: {response.content}")
+        #if not 200 <= response.status_code < 300:
+            #raise Exception(f"error when receiving message from thing: {response.content}")
 
     def change_property(self, thing_id: str, feature_id: str, property_path: str, body: Dict):
         headers = self._header
@@ -136,5 +136,5 @@ class ThingsAPI:
                                 '/features/' + feature_id + '/properties/' + property_path,
                                 headers=headers, json=body)
 
-        if not 200 <= response.status_code < 300:
-            raise Exception(f"error when changing property: {response.content}")
+        #if not 200 <= response.status_code < 300:
+            #raise Exception(f"error when changing property: {response.content}")

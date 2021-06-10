@@ -11,7 +11,7 @@ from stochastic_service_composition.services import Service
 from stochastic_service_composition.types import State, Action
 
 DEVICE_ID_PREFIX = "com.bosch.services"
-DITTO_PREFIX = "com.bosch.services/"
+#DITTO_PREFIX = "com.bosch.services/"
 TENANT_ID = "t6f04cf30b6b34842bfe43e6d9da37818_hub"
 HUB_ADAPTER_HOST = "mqtt.bosch-iot-hub.com"
 CERTIFICATE_PATH_ID = "./iothub.crt"
@@ -81,7 +81,7 @@ class BoschIotDevice(ABC):
 
     @property
     def ditto_topic(self):
-        return f"{DITTO_PREFIX}/{self.device_name}"
+        return f"{DEVICE_ID_PREFIX}/{self.device_name}"
 
     @property
     def publish_topic(self):
@@ -136,9 +136,6 @@ class BoschIotDevice(ABC):
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/status/properties/value","value" : ' + status + '}'
         self._client.publish(self.publish_topic, payload)
-
-        # Period for publishing data to the MQTT broker in seconds
-        #timePeriod = 10
 
     def run(self):
         self._client.on_connect = self.on_connect
