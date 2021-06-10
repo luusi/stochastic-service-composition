@@ -10,7 +10,7 @@ hub_adapter_host = "mqtt.bosch-iot-hub.com"
 deviceId = "com.myThings:clr1"
 clientId = deviceId
 authId = "com.myThings_clr1"
-#certificatePath = "./iothub.crt"
+certificatePath = "./iothub.crt"
 ditto_topic = "com.myThings/clr1"
 
 
