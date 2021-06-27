@@ -2,7 +2,7 @@ import urllib
 
 import requests
 
-from digital_twins.Devices.base import BoschIotDevice
+from digital_twins.Devices.base import BoschIotService
 from digital_twins.Devices.utils import service_from_json
 from digital_twins.things_api import ThingsAPI, config_from_json
 from pathlib import Path

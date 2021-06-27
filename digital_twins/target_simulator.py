@@ -20,12 +20,8 @@ class TargetSimulator:
         """Reset the target to its initial state."""
         self._current_state = self.target.initial_state
 
-    def sample_action_and_update_state(self):
-        """Sample the next action and update the state."""
+    def update_state(self, action) -> None:
+        """Update the state given an action."""
         transitions_from_state = self.target.transition_function[self._current_state]
-        action_to_probability = self.target.policy[self._current_state]
-        actions, probabilities = zip(*action_to_probability.items())
-        sampled_action = random.choices(actions, probabilities)[0]
-        next_state = transitions_from_state[sampled_action]
+        next_state = transitions_from_state[action]
         self._current_state = next_state
-        return sampled_action

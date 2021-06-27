@@ -71,6 +71,7 @@ def composition_mdp(
 
         for i in system_symbols_by_symbols.get(current_symbol, set()):
             next_transitions = {}
+            # TODO check if it is needed
             if current_symbol not in target.transition_function[current_target_state]:
                 continue
             next_reward = (

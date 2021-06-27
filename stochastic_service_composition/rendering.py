@@ -36,13 +36,14 @@ def service_to_graphviz(
     graph.edge("fake", state2str(service.initial_state), style="bold")
 
     for start, outgoing in service.transition_function.items():
-        for action, end in outgoing.items():
-            label = f"{action2str(action)}"
-            graph.edge(
-                state2str(start),
-                state2str(end),
-                label=label,
-            )
+        for action, (next_states, reward) in outgoing.items():
+            for state, prob in next_states.items():
+                label = f"{action2str(action)}, {prob}, {reward}"
+                graph.edge(
+                    state2str(start),
+                    state2str(state),
+                    label=label,
+                )
 
     return graph
 
