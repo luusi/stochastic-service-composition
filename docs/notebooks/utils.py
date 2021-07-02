@@ -33,6 +33,7 @@ def display_svgs(*filenames, format: str="png"):
 
 def render_service(service: Service, format=_default_format):
     digraph = service_to_graphviz(service)
+
     render_digraph(digraph, format)
 
 

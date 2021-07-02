@@ -5,7 +5,6 @@ from stochastic_service_composition.composition import composition_mdp
 from stochastic_service_composition.services import Service, build_service_from_transitions
 from stochastic_service_composition.target import build_target_from_transitions
 
-
 DEFAULT_REWARD = -1.0
 DEFAULT_BROKEN_REWARD = -10.0
 DEFAULT_BROKEN_PROB = 0.05
@@ -14,12 +13,9 @@ DEFAULT_BROKEN_PROB = 0.05
 def target_service():
     """Build the target service."""
     transition_function = {
-        "s0": {
-            "provisioning": ("s1", 1.0, 0),
-        },
-        "s1": {"moulding": ("s2", 1.0, 0),
-        },
-        "s2": {"check_moulding": ("s3", 1.0, 0),},
+        "s0": {"provisioning": ("s1", 1.0, 0), },
+        "s1": {"moulding": ("s2", 1.0, 0), },
+        "s2": {"check_moulding": ("s3", 1.0, 0), },
         "s3": {"drying": ("s4", 1.0, 0), },
         "s4": {"check_drying": ("s5", 1.0, 0), },
         "s5": {"first_baking": ("s6", 1.0, 0), },
@@ -45,12 +41,12 @@ def target_service():
 def provisioning_service(action_reward: float = DEFAULT_REWARD) -> Service:
     """Build the provisioning device."""
     transitions = {
-        "s0": {
-            "provisioning": ({"s0": 1.0}, action_reward),
+        "available": {
+            "provisioning": ({"available": 1.0}, action_reward),
         },
     }
-    final_states = {"s0"}
-    initial_state = "s0"
+    final_states = {"available"}
+    initial_state = "available"
     return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
@@ -77,6 +73,7 @@ def moulding_service(broken_prob: float = DEFAULT_BROKEN_PROB, broken_reward: fl
     """Build the moulding device."""
     return _build_device_service("moulding", broken_prob=broken_prob, broken_reward=broken_reward, action_reward=action_reward)
 
+
 def drying_service(broken_prob: float = DEFAULT_BROKEN_PROB, broken_reward: float = DEFAULT_BROKEN_REWARD, action_reward: float = DEFAULT_REWARD) -> Service:
     """Build the drying device."""
     return _build_device_service("drying", broken_prob=broken_prob, broken_reward=broken_reward, action_reward=action_reward)
@@ -87,7 +84,7 @@ def first_baking_service(broken_prob: float = DEFAULT_BROKEN_PROB, broken_reward
     return _build_device_service("first_baking", broken_prob=broken_prob, broken_reward=broken_reward, action_reward=action_reward)
 
 
-def enamelling(broken_prob: float = DEFAULT_BROKEN_PROB, broken_reward: float = DEFAULT_BROKEN_REWARD, action_reward: float = DEFAULT_REWARD) -> Service:
+def enamelling_service(broken_prob: float = DEFAULT_BROKEN_PROB, broken_reward: float = DEFAULT_BROKEN_REWARD, action_reward: float = DEFAULT_REWARD) -> Service:
     """Build the enamelling device."""
     return _build_device_service("enamelling", broken_prob=broken_prob, broken_reward=broken_reward, action_reward=action_reward)
 
@@ -110,12 +107,12 @@ def second_baking_service(broken_prob: float = DEFAULT_BROKEN_PROB, broken_rewar
 def shipping_service(action_reward: float = DEFAULT_REWARD) -> Service:
     """Build the shipping device."""
     transitions = {
-        "s0": {
-            "shipping": ({"s0": 1.0}, action_reward),
+        "available": {
+            "shipping": ({"available": 1.0}, action_reward),
         },
     }
-    final_states = {"s0"}
-    initial_state = "s0"
+    final_states = {"available"}
+    initial_state = "available"
     return build_service_from_transitions(transitions, initial_state, final_states)  # type: ignore
 
 
@@ -128,7 +125,7 @@ if __name__ == '__main__':
         moulding_service(),
         drying_service(),
         first_baking_service(),
-        enamelling(),
+        enamelling_service(),
         painting_service(broken_prob=0.5),
         painting_human_service(),
         second_baking_service(),
@@ -152,3 +149,4 @@ if __name__ == '__main__':
     # print_value_function(value_function)
     # print()
     print_q_value_function(q_value_function)
+

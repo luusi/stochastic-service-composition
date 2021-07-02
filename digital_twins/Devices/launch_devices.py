@@ -9,11 +9,14 @@ from digital_twins.run_device import run_device
 CURRENT_DIRECTORY = Path(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
 DEVICES = [
-    "bathroom_heating_device",
-    "bathtub_device",
-    "door_device",
-    "kitchen_exhaust_fan_device",
-    "user_behaviour",
+    "provisioning_service",
+    "drying_service",
+    "enamelling_service",
+    "moulding_service",
+    "first_baking_service",
+    "painting_service",
+    "second_baking_service",
+    "shipping_service",
 ]
 
 TARGET = "target"
