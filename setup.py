@@ -12,6 +12,6 @@ setup(name='stochastic_service_composition',
       install_requires=[
             "numpy",
             "graphviz",
-            "mdp_dp_rl @ git+https://github.com/marcofavorito/mdp-dp-rl.git#egg=mdp_dp_rl"
+            "mdp_dp_rl @ git+https://github.com/luusi/mdp-dp-rl.git#egg=mdp_dp_rl"
       ]
       )
