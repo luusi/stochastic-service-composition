@@ -10,6 +10,7 @@ from pathlib import Path
 
 from mdp_dp_rl.processes.mdp import MDP
 
+from digital_twins.Devices.base import Event, EventType
 from digital_twins.Devices.utils import service_from_json, target_from_json
 from digital_twins.target_simulator import TargetSimulator
 from digital_twins.things_api import config_from_json, ThingsAPI
@@ -83,7 +84,13 @@ async def main(config: str, timeout: int):
             print("Waiting for messages from target...")
             target_message = await websocket.recv()
             target_message_json = json.loads(target_message)
-            #assert target_message["thingId"] == target_thing_id, "not a message from the target"
+            event = Event.from_message(target_message_json)
+            if event.from_ != target_thing_id or event.type != EventType.MODIFIED or event.feature != "current_action":
+                print(f"Skipping, not a message from the target: {target_message_json}")
+                continue
+            print(f"Received message: {target_message_json}")
+            print(f"Event parsed: {event}")
+
             target_action = target_message_json["value"]
             current_target_state = target_simulator.current_state
             target_simulator.update_state(target_action)
@@ -99,13 +106,18 @@ async def main(config: str, timeout: int):
             chosen_thing_id = service_ids[service_index]
             print("Sending message to thing: ", chosen_thing_id, target_action, timeout)
             response = api.send_message_to_thing(chosen_thing_id, target_action, {}, timeout)
-            print(f"Got response")
+            print(f"Got response: {response}")
             print("Waiting for update from websocket...")
             message_receive = await websocket.recv()
-            print(f"Update after change: {message_receive}")
-            json_message = json.loads(message_receive)
-            # assert json_message["thingId"] == chosen_thing_id, "not the right thing id"
-            next_service_state = json_message["value"]
+            service_message_json = json.loads(message_receive)
+            service_event = Event.from_message(service_message_json)
+            # wait until we don't receive the right message from the chosen thing
+            while service_event.from_ != chosen_thing_id or service_event.type != EventType.MODIFIED or service_event.feature != "current_state":
+                message_receive = await websocket.recv()
+                service_message_json = json.loads(message_receive)
+                service_event = Event.from_message(service_message_json)
+            print(f"Update after change: {service_message_json}")
+            next_service_state = service_message_json["value"]
             # compute the next system state
             system_state[service_index] = next_service_state
 

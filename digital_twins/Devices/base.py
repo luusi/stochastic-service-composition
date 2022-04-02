@@ -1,6 +1,8 @@
+import dataclasses
 import random
 from abc import ABC, abstractmethod
-from typing import Optional, Callable
+from enum import Enum
+from typing import Optional, Callable, Dict
 import json
 
 import paho.mqtt.client as mqtt
@@ -12,7 +14,7 @@ from stochastic_service_composition.types import State, Action
 from stochastic_service_composition.target import Target
 
 DEVICE_ID_PREFIX = "com.bosch.service"
-TENANT_ID = "tc55a0262c63a4fb7bb2dfa755672ff2b_hub"
+TENANT_ID = "t18b00c729314420382a3bf405e783ca0_hub"
 HUB_ADAPTER_HOST = "mqtt.bosch-iot-hub.com"
 CERTIFICATE_PATH_ID = "./iothub.crt"
 DEVICE_PASSWORD_ID = "secret"
@@ -226,3 +228,27 @@ class BoschIotService(BoschIoTDevice):
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/status/properties/value","value" : "' + status + '"}'
         self._client.publish(self.publish_topic, payload)
+
+
+class EventType(Enum):
+    CREATED = "created"
+    MODIFIED = "modified"
+
+
+@dataclasses.dataclass(frozen=True)
+class Event:
+    from_: str
+    type: EventType
+    feature: str
+
+    @classmethod
+    def from_message(cls, message_json: Dict) -> "Event":
+        topic_string = message_json["topic"]
+        topic_tokens = topic_string.split("/")
+        service_id = f"{topic_tokens[0]}:{topic_tokens[1]}"
+        event_type_string = topic_tokens[-1]
+
+        path = message_json["path"]
+        path_tokens = path.split("/")
+        feature_name = path_tokens[2]
+        return Event(service_id, EventType(event_type_string), feature_name)

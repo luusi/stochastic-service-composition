@@ -1,7 +1,7 @@
 {
   "uri": "https://things.eu-1.bosch-iot-suite.com/api/2",
   "namespace": "com.bosch.service",
-  "client_id": "df73d92c-b931-4c38-b3d9-ab3aeba1a5b2",
-  "client_secret": "secretclient",
-  "scope": "service:iot-hub-prod:tc55a0262c63a4fb7bb2dfa755672ff2b_hub/full-access service:iot-things-eu-1:c55a0262-c63a-4fb7-bb2d-fa755672ff2b_things/full-access service:vorto"
+  "client_id": "f6b43823-b040-4f0f-893f-f16e50c76952",
+  "client_secret": "client_secret",
+  "scope": "service:iot-hub-prod:t18b00c729314420382a3bf405e783ca0_hub/full-access service:iot-things-eu-1:18b00c72-9314-4203-82a3-bf405e783ca0_things/full-access service:vorto"
 }
