@@ -14,6 +14,7 @@ DEVICES = [
     "enamelling_service",
     "moulding_service",
     "first_baking_service",
+    "painting_human_service",
     "painting_service",
     "second_baking_service",
     "shipping_service",

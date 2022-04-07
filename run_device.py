@@ -16,5 +16,5 @@ if __name__ == "__main__":
     config = config_from_json(Path("digital_twins/config.json"))
     api = ThingsAPI(config)
     thing_service = service_from_json(api.get_thing(thing_id)[0])
-    device = BoschIotService(device_name, thing_service, certificate_path=certificate_path)
+    device = BoschIotService(device_name, thing_service.service, certificate_path=certificate_path)
     device.run()

@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import json
 import urllib.parse
-
+from typing import Dict
 
 import websockets
 import logging
@@ -14,7 +14,9 @@ from digital_twins.Devices.base import Event, EventType
 from digital_twins.Devices.utils import service_from_json, target_from_json
 from digital_twins.target_simulator import TargetSimulator
 from digital_twins.things_api import config_from_json, ThingsAPI
+from digital_twins.wrappers import AbstractServiceWrapper
 from stochastic_service_composition.composition import composition_mdp
+from stochastic_service_composition.services import Service
 from stochastic_service_composition.target import Target
 
 
@@ -45,7 +47,7 @@ async def main(config: str, timeout: int):
     api = ThingsAPI(configuration)
     data = api.search_services("")
     for element in data:
-        service = service_from_json(element)
+        service = service_from_json(element, reset=True)
         services.append(service)
 
         service_ids.append(element["thingId"])
@@ -54,6 +56,9 @@ async def main(config: str, timeout: int):
     assert len(data) == 1
     target: Target = target_from_json(data[0])
     target_thing_id = data[0]["thingId"]
+    print("Found services: ")
+    for service_id, service_name in enumerate(service_ids):
+        print(f"- {service_id}: {service_name}")
 
     print("Opening websocket endpoint...")
     ws_uri = "wss://things.eu-1.bosch-iot-suite.com/ws/2"
@@ -62,11 +67,8 @@ async def main(config: str, timeout: int):
                                   })) as websocket:
         print("Collecting problem data...")
 
-        mdp: MDP = composition_mdp(target, *services)
-        orchestrator_policy = mdp.get_optimal_policy()
-        target_simulator = TargetSimulator(target)
         system_state = [service.initial_state for service in services]
-
+        target_simulator = TargetSimulator(target)
         iteration = 0
 
         event_cmd = "START-SEND-EVENTS"
@@ -79,14 +81,25 @@ async def main(config: str, timeout: int):
         if message_receive != "START-SEND-EVENTS:ACK":
             raise Exception("Ack not received")
 
+        old_policy = None
         while True:
+
+            mdp: MDP = composition_mdp(target, *services)
+            orchestrator_policy = mdp.get_optimal_policy()
+            # detect when policy changes
+            if old_policy is None:
+                old_policy = orchestrator_policy
+            if old_policy.policy_data != orchestrator_policy.policy_data:
+                print(f"fOptimal Policy has changed!\nold_policy = {old_policy}\nnew_policy={orchestrator_policy}")
+            old_policy = orchestrator_policy
+
             # waiting for target action
             print("Waiting for messages from target...")
             target_message = await websocket.recv()
             target_message_json = json.loads(target_message)
             event = Event.from_message(target_message_json)
             if event.from_ != target_thing_id or event.type != EventType.MODIFIED or event.feature != "current_action":
-                print(f"Skipping, not a message from the target: {target_message_json}")
+                #print(f"Skipping, not a message from the target: {target_message_json}")
                 continue
             print(f"Received message: {target_message_json}")
             print(f"Event parsed: {event}")
@@ -124,6 +137,14 @@ async def main(config: str, timeout: int):
             # send "DONE" to target
             response = api.send_message_to_thing(target_thing_id, "done", {}, timeout)
             iteration += 1
+
+            print("Download new transition function from chosen service")
+            data = api.get_thing(chosen_thing_id)[0]
+            old_transition_function = services[service_index].current_transition_function
+            new_service = service_from_json(data, reset=False)
+            services[service_index] = new_service
+            if old_transition_function != new_service.current_transition_function:
+                print(f"Transition function has changed!\nOld: {old_transition_function}\nNew: {new_service.transition_function}")
 
 
 if __name__ == "__main__":

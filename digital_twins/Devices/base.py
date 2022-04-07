@@ -2,13 +2,14 @@ import dataclasses
 import random
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Callable, Dict
+from typing import Optional, Callable, Dict, Tuple
 import json
 
 import paho.mqtt.client as mqtt
 
 import threading
 
+from digital_twins.wrappers import initialize_wrapper
 from stochastic_service_composition.services import Service
 from stochastic_service_composition.types import State, Action
 from stochastic_service_composition.target import Target
@@ -123,6 +124,9 @@ class BoschIoTDevice(ABC):
             raise ValueError("device already stopped")
         self._terminated.set()
 
+    def print(self, *args, **kwargs):
+        print(f"[{self.device_name}] ", *args, **kwargs)
+
 
 class BoschIoTTarget(BoschIoTDevice):
 
@@ -187,34 +191,56 @@ class BoschIotService(BoschIoTDevice):
         self._service = service
         self._current_state = self._service.initial_state
 
+        # TODO: decide how to initialize concrete class of AbstractServiceWrapper
+        self.wrapper = initialize_wrapper(self._service)
+
     def reset(self):
         super().reset()
         self._current_state = self._service.initial_state
 
     def on_message(self, client, userdata, msg):
         """The callback for when a PUBLISH message is received from the server."""
-        print(f"Message received: client={client}, userdata={userdata}, msg={msg}")
+        self.print(f"Message received: client={client}, userdata={userdata}, msg={msg}")
         cmd = json.loads(msg.payload.decode("utf-8"))
+        self.print("JSON Command: ", cmd)
         cmd_name = cmd["topic"].split("/")[-1]
-        print(f"Command: {cmd_name}")
-        print(f"Current state: {self._current_state}")
-        # self.change_status(json.dumps("busy"))
+        if cmd_name == "errors":
+            self.print("WARNING: got 'errors' command" )
+            return
+        self.print(f"Command: {cmd_name}")
+        self.print(f"Current state: {self._current_state}")
+
         self.execute_command(cmd_name)
         # self.change_status(json.dumps("terminated"))
-        print(f"Current state after executing command: {self._current_state}")
+        self.print(f"Current state after executing command: {self._current_state}")
 
     def execute_command(self, name: Action):
-        transitions_from_current_state = self._service.transition_function[self._current_state]
+        starting_state = self._current_state
+        transitions_from_current_state = self._service.transition_function[starting_state]
         next_service_states, reward = transitions_from_current_state[name]
         states, probabilities = zip(*next_service_states.items())
-        self._current_state = random.choices(states, probabilities)[0]
-        self.update_state("current_state", self._current_state)
+        new_state = random.choices(states, probabilities)[0]
+        self._current_state = new_state
+        self.wrapper.update(starting_state, name)
+        transition_function = self.wrapper.transition_function
+        self.update_state("current_state", new_state)
+        self.update_transition_function("transition_function", transition_function)
 
     def update_state(self, feature, value):
         payload = '{"topic": "' + self.ditto_topic + \
                   '/things/twin/commands/modify","headers": {"response-required": false},' + \
                   '"path": "/features/' + feature + '/properties/value","value" : "' + value + '"}'
-        print(f"Updating state: {payload}")
+        self.print(f"Updating state: {payload}")
+        self._client.publish(self.publish_topic, payload)
+
+    def update_transition_function(self, feature, transitions):
+        payload = '{"topic": "' + self.ditto_topic + \
+                  '/things/twin/commands/modify","headers": {"response-required": false},' + \
+                  '"path": "/features/' + feature + '/properties/transitions","value" : ' + json.dumps(transitions) + '}'
+        # just to check if it is a valid JSON object
+        json.loads(payload)
+        self.print(f"Updating transition function: {payload}")
+        # TODO: add path to transition function
         self._client.publish(self.publish_topic, payload)
 
     def publish_output(self, output):

@@ -17,5 +17,6 @@ def run_device(device_name, path_to_json: Path = Path("config.json"), is_target:
         device = BoschIoTTarget(device_name, thing_target, certificate_path=certificate_path)
     else:
         thing_service = service_from_json(api.get_thing(thing_id)[0])
-        device = BoschIotService(device_name, thing_service, certificate_path=certificate_path)
+        device = BoschIotService(device_name, thing_service.service, certificate_path=certificate_path)
+        #device = BoschIoTBreakableService(device_name, thing_service, template, certificate_path=certificate_path)
     device.run()
