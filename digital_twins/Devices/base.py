@@ -207,6 +207,15 @@ class BoschIotService(BoschIoTDevice):
         if cmd_name == "errors":
             self.print("WARNING: got 'errors' command" )
             return
+        if cmd_name == "Scheduled_maintenance":
+            self.print("This is a scheduled maintenance")
+            starting_state = self._service.initial_state
+            self.update_state("current_state", starting_state)
+            transition_function = self._service.transition_function
+            self.update_transition_function("transition_function", transition_function)
+            return
+            #self.execute_maintenance(cmd_name)
+
         self.print(f"Command: {cmd_name}")
         self.print(f"Current state: {self._current_state}")
 
@@ -225,6 +234,12 @@ class BoschIotService(BoschIoTDevice):
         transition_function = self.wrapper.transition_function
         self.update_state("current_state", new_state)
         self.update_transition_function("transition_function", transition_function)
+
+    #def execute_maintenance(self, maintenance: str):
+        #starting_state = self._service.initial_state
+        #self.update_state("current_state", starting_state)
+        #transition_function = self._service.transition_function
+        #self.update_transition_function("transition_function", transition_function)
 
     def update_state(self, feature, value):
         payload = '{"topic": "' + self.ditto_topic + \
