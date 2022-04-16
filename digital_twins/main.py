@@ -146,12 +146,10 @@ async def main(config: str, timeout: int):
             if old_transition_function != new_service.current_transition_function:
                 print(f"Transition function has changed!\nOld: {old_transition_function}\nNew: {new_service.transition_function}")
             if iteration == 28:
-                print("Sending msg to scheduled maintenance")
+                print("Sending msg for scheduled maintenance")
                 for element in service_ids:
                     api.send_message_to_thing(element, "Scheduled_maintenance", {}, timeout)
-                #data = api.search_services("")
-                #for element in data:
-                    #service_from_json(element, reset=True)
+
 
 if __name__ == "__main__":
     arguments = parser.parse_args()

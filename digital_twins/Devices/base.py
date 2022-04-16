@@ -14,8 +14,8 @@ from stochastic_service_composition.services import Service
 from stochastic_service_composition.types import State, Action
 from stochastic_service_composition.target import Target
 
-DEVICE_ID_PREFIX = "com.bosch.service"
-TENANT_ID = "t18b00c729314420382a3bf405e783ca0_hub"
+DEVICE_ID_PREFIX = "com.bosch.services"
+TENANT_ID = "t0c7793b5e5034a44a0a40bc454099cba_hub"
 HUB_ADAPTER_HOST = "mqtt.bosch-iot-hub.com"
 CERTIFICATE_PATH_ID = "./iothub.crt"
 DEVICE_PASSWORD_ID = "secret"
@@ -209,12 +209,12 @@ class BoschIotService(BoschIoTDevice):
             return
         if cmd_name == "Scheduled_maintenance":
             self.print("This is a scheduled maintenance")
-            starting_state = self._service.initial_state
-            self.update_state("current_state", starting_state)
-            transition_function = self._service.transition_function
-            self.update_transition_function("transition_function", transition_function)
+            self.execute_maintenance(cmd_name)
             return
-            #self.execute_maintenance(cmd_name)
+            #starting_state = self._service.initial_state
+            #self.update_state("current_state", starting_state)
+            #transition_function = self._service.transition_function
+            #self.update_transition_function("transition_function", transition_function)
 
         self.print(f"Command: {cmd_name}")
         self.print(f"Current state: {self._current_state}")
@@ -235,11 +235,11 @@ class BoschIotService(BoschIoTDevice):
         self.update_state("current_state", new_state)
         self.update_transition_function("transition_function", transition_function)
 
-    #def execute_maintenance(self, maintenance: str):
-        #starting_state = self._service.initial_state
-        #self.update_state("current_state", starting_state)
-        #transition_function = self._service.transition_function
-        #self.update_transition_function("transition_function", transition_function)
+    def execute_maintenance(self, maintenance: str):
+        starting_state = self._service.initial_state
+        self.update_state("current_state", starting_state)
+        transition_function = self._service.transition_function
+        self.update_transition_function("transition_function", transition_function)
 
     def update_state(self, feature, value):
         payload = '{"topic": "' + self.ditto_topic + \
