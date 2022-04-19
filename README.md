@@ -60,6 +60,13 @@ password: Reviewer12!
 
 Then, click on `Go to the Developer Console`, `Things` where there are the list of Digital Twins to edit
 
+## Run code
+To establish the connection with the Bosch IoT Things platform, first launch the `main.py` file in `stochastic-service-composition/digital_twins/`, the orchestrator connects to MQTT client and waits the event from the target service
+
+Then, run `launch_devices.py` file in `stochastic-service-composition/digital_twins/Devices/`, the Digital Twins devices are launched and is released the action from the target and it is sent to the orchestrator.
+
+The communication between the orchestrator and devices starts and the orchestrator, once receive he action from  the target service, dispatches it to the correct service that can perform it.
+
 ## Tests
 
 To run tests: `tox`
