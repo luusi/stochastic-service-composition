@@ -53,6 +53,13 @@ Then, run:
 ```
 python digital_twins/main.py --config digital_twins/config.json
 ```
+To modify characteristics of the Digital Twins go to the page https://bosch-iot-suite.com/
+and login with the following credentials:
+email: reviewer.dt.research@gmail.com
+password: Reviewer12!
+
+Then, click on `Go to the Developer Console`, `Things` where there are the list of Digital Twins 
+that to edit
 
 ## Tests
 
