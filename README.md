@@ -50,7 +50,7 @@ python digital_twins/main.py --config digital_twins/config.json
 
 ## Experiments 
 
-To modify characteristics of the Digital Twins go to the page https://bosch-iot-suite.com/
+To modify characteristics of the Digital Twins go to the page https://bosch-iot-suite.com/.
 
 Login with the following credentials:
 
@@ -58,14 +58,14 @@ email: reviewer.dt.research@gmail.com
 
 password: Reviewer12!
 
-Then, click on `Go to the Developer Console`, `Things` where there are the list of Digital Twins to edit
+Then, click on `Go to the Developer Console`, `Things` where there are the list of Digital Twins to edit.
 
 ## Run code
-To establish the connection with the Bosch IoT Things platform, first launch the `main.py` file in `stochastic-service-composition/digital_twins/`, the orchestrator connects to MQTT client and waits the event from the target service
+To establish the connection with the Bosch IoT Things platform, first launch the `main.py` file in `stochastic-service-composition/digital_twins/`. The orchestrator connects to the MQTT client and waits for the event from the target service.
 
-Then, run `launch_devices.py` file in `stochastic-service-composition/digital_twins/Devices/`, the Digital Twins devices are launched and is released the action from the target and it is sent to the orchestrator.
+Then, run `launch_devices.py` file in `stochastic-service-composition/digital_twins/Devices/`. The Digital Twins devices are launched and is released the action from the target service and it is sent to the orchestrator.
 
-The communication between the orchestrator and devices starts and the orchestrator, once receive he action from  the target service, dispatches it to the correct service that can perform it.
+The communication between the orchestrator and devices starts, and the orchestrator, once receive the action from the target service, dispatches it to the correct service that can perform it.
 
 ## Tests
 
