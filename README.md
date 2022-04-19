@@ -53,6 +53,9 @@ Then, run:
 ```
 python digital_twins/main.py --config digital_twins/config.json
 ```
+
+## Experiments 
+
 To modify characteristics of the Digital Twins go to the page https://bosch-iot-suite.com/
 
 Login with the following credentials:
